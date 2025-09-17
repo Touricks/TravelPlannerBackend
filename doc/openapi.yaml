@@ -17,6 +17,7 @@ paths:
   /itineraries:
     post:
       summary: Create a new itinerary
+
       operationId: createItinerary
       tags: [Itineraries]
       requestBody:

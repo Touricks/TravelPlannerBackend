@@ -1,2 +1,2 @@
-# TravelPlannerFrontend
-Frontend for travel planner
+# TravelPlannerBackend
+Backend for AI Travel Planner
