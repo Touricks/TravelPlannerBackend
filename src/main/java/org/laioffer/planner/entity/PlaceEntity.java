@@ -9,7 +9,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -76,6 +78,10 @@ public class PlaceEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    // Relationships
+    @OneToMany(mappedBy = "place")
+    private Set<ItineraryPlaceEntity> itineraryPlaces = new HashSet<>();
+    
     // Constructors
     public PlaceEntity() {}
     
@@ -127,4 +133,7 @@ public class PlaceEntity {
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    
+    public Set<ItineraryPlaceEntity> getItineraryPlaces() { return itineraryPlaces; }
+    public void setItineraryPlaces(Set<ItineraryPlaceEntity> itineraryPlaces) { this.itineraryPlaces = itineraryPlaces; }
 }

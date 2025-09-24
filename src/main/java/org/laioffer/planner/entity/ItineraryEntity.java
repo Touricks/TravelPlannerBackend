@@ -12,7 +12,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -67,6 +69,10 @@ public class ItineraryEntity {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
     
+    // Relationships
+    @OneToMany(mappedBy = "itinerary", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<ItineraryPlaceEntity> itineraryPlaces = new HashSet<>();
+    
     // Constructors
     public ItineraryEntity() {}
     
@@ -106,4 +112,35 @@ public class ItineraryEntity {
     
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+    
+    public Set<ItineraryPlaceEntity> getItineraryPlaces() { return itineraryPlaces; }
+    public void setItineraryPlaces(Set<ItineraryPlaceEntity> itineraryPlaces) { this.itineraryPlaces = itineraryPlaces; }
+    
+    // Helper methods for managing the relationship
+    public void addPlace(PlaceEntity place) {
+        addPlace(place, false, null);
+    }
+    
+    public void addPlace(PlaceEntity place, boolean pinned) {
+        addPlace(place, pinned, null);
+    }
+    
+    public void addPlace(PlaceEntity place, boolean pinned, String note) {
+        ItineraryPlaceEntity itineraryPlace = new ItineraryPlaceEntity(this, place, pinned, note);
+        itineraryPlaces.add(itineraryPlace);
+        place.getItineraryPlaces().add(itineraryPlace);
+    }
+    
+    public void removePlace(PlaceEntity place) {
+        ItineraryPlaceEntity itineraryPlace = itineraryPlaces.stream()
+            .filter(ip -> ip.getPlace().equals(place))
+            .findFirst()
+            .orElse(null);
+        if (itineraryPlace != null) {
+            itineraryPlaces.remove(itineraryPlace);
+            place.getItineraryPlaces().remove(itineraryPlace);
+            itineraryPlace.setItinerary(null);
+            itineraryPlace.setPlace(null);
+        }
+    }
 }
