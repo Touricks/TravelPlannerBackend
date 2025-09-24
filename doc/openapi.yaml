@@ -292,6 +292,10 @@ components:
         imageUrl: { type: string, format: uri, nullable: true }
         description: { type: string, nullable: true }
         openingHours: { $ref: '#/components/schemas/OpeningHoursDTO' }
+        itineraryPlaceId: { type: integer }
+        pinned: { type: boolean, nullable: true }
+        note: { type: string, nullable: true }
+        addedAt: { type: string, format: date-time, nullable: true }
       required: [id, name, location, address]
 
     # 1) Create Itinerary
