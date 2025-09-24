@@ -1,4 +1,4 @@
-package org.laioffer.planner.model.interest;
+package org.laioffer.planner.Recommendations.model.interest;
 
 public class AddInterestRequest {
     private String placeId;

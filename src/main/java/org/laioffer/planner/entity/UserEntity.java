@@ -1,4 +1,4 @@
-package org.laioffer.planner.user;
+package org.laioffer.planner.entity;
 
 import jakarta.persistence.*;
 import org.laioffer.planner.user.model.UserRole;
@@ -53,7 +53,7 @@ public class UserEntity implements UserDetails {
         this.username = username;
         this.password = password;
     }
-    
+
     // UserDetails implementation
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

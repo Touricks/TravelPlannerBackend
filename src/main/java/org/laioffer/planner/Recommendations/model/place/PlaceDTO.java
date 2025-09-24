@@ -1,8 +1,10 @@
-package org.laioffer.planner.model.place;
+package org.laioffer.planner.Recommendations.model.place;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.laioffer.planner.model.common.GeoPoint;
+import org.laioffer.planner.Recommendations.model.common.GeoPoint;
+import org.laioffer.planner.entity.ItineraryPlaceId;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -15,6 +17,12 @@ public class PlaceDTO {
     private String imageUrl;
     private String description;
     private OpeningHoursDTO openingHours;
+    
+    // Itinerary-specific fields
+    private ItineraryPlaceId itineraryPlaceId;
+    private Boolean pinned;
+    private String note;
+    private LocalDateTime addedAt;
     
     public PlaceDTO() {}
     
@@ -87,6 +95,38 @@ public class PlaceDTO {
     
     public void setOpeningHours(OpeningHoursDTO openingHours) {
         this.openingHours = openingHours;
+    }
+    
+    public ItineraryPlaceId getItineraryPlaceId() {
+        return itineraryPlaceId;
+    }
+    
+    public void setItineraryPlaceId(ItineraryPlaceId itineraryPlaceId) {
+        this.itineraryPlaceId = itineraryPlaceId;
+    }
+    
+    public Boolean getPinned() {
+        return pinned;
+    }
+    
+    public void setPinned(Boolean pinned) {
+        this.pinned = pinned;
+    }
+    
+    public String getNote() {
+        return note;
+    }
+    
+    public void setNote(String note) {
+        this.note = note;
+    }
+    
+    public LocalDateTime getAddedAt() {
+        return addedAt;
+    }
+    
+    public void setAddedAt(LocalDateTime addedAt) {
+        this.addedAt = addedAt;
     }
     
     @Override

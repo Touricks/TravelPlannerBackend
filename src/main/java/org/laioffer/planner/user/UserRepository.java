@@ -1,5 +1,6 @@
 package org.laioffer.planner.user;
 
+import org.laioffer.planner.entity.UserEntity;
 import org.laioffer.planner.user.model.UserRole;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;

@@ -3,8 +3,7 @@ package org.laioffer.planner.entity;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-import org.laioffer.planner.model.itinerary.TravelMode;
-import org.laioffer.planner.user.UserEntity;
+import org.laioffer.planner.Recommendations.model.itinerary.TravelMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -25,7 +24,6 @@ public class ItineraryEntity {
     @Id
     @GeneratedValue
     private UUID id;
-    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;

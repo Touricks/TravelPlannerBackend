@@ -1,4 +1,4 @@
-package org.laioffer.planner.model.place;
+package org.laioffer.planner.Recommendations.model.place;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 

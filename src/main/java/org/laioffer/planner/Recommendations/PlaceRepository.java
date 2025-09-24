@@ -34,16 +34,6 @@ public interface PlaceRepository extends JpaRepository<PlaceEntity, UUID> {
     );
     
     /**
-     * Find places by external place ID (e.g., Google Place ID)
-     */
-    PlaceEntity findByExternalPlaceId(String externalPlaceId);
-    
-    /**
-     * Check if a place exists by external place ID
-     */
-    boolean existsByExternalPlaceId(String externalPlaceId);
-    
-    /**
      * Find places by source (e.g., 'google_places')
      */
     List<PlaceEntity> findBySource(String source);

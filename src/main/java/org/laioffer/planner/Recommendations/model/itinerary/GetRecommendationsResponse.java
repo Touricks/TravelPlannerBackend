@@ -1,7 +1,7 @@
-package org.laioffer.planner.model.itinerary;
+package org.laioffer.planner.Recommendations.model.itinerary;
 
-import org.laioffer.planner.model.common.PageMeta;
-import org.laioffer.planner.model.place.PlaceDTO;
+import org.laioffer.planner.Recommendations.model.common.PageMeta;
+import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
 
 import java.util.List;
 import java.util.UUID;

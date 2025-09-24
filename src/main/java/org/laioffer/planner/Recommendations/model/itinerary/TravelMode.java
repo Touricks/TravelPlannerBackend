@@ -1,4 +1,4 @@
-package org.laioffer.planner.model.itinerary;
+package org.laioffer.planner.Recommendations.model.itinerary;
 
 public enum TravelMode {
     DRIVING,

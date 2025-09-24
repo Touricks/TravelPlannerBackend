@@ -1,6 +1,6 @@
-package org.laioffer.planner.model.planning;
+package org.laioffer.planner.Recommendations.model.planning;
 
-import org.laioffer.planner.model.common.ApiError;
+import org.laioffer.planner.Recommendations.model.common.ApiError;
 
 import java.util.List;
 import java.util.UUID;

@@ -1,10 +1,9 @@
 package org.laioffer.planner.Recommendations;
 
-import org.laioffer.planner.entity.PlaceEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
-import org.laioffer.planner.model.common.PageMeta;
-import org.laioffer.planner.model.itinerary.GetRecommendationsResponse;
-import org.laioffer.planner.model.place.PlaceDTO;
+import org.laioffer.planner.Recommendations.model.common.PageMeta;
+import org.laioffer.planner.Recommendations.model.itinerary.GetRecommendationsResponse;
+import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -127,8 +126,7 @@ public class RecommendationService {
      * Convert ItineraryPlaceEntity to PlaceDTO using denormalized fields
      */
     private PlaceDTO convertItineraryPlaceToDTO(ItineraryPlaceEntity itineraryPlace) {
-        PlaceEntity place = itineraryPlace.getPlace();
-        return placeMapper.toDTO(place);
+        return placeMapper.toItineraryPlaceDTO(itineraryPlace);
     }
 
     /**

@@ -23,9 +23,6 @@ public class PlaceEntity {
     @GeneratedValue
     private UUID id;
     
-    @Column(name = "external_place_id", unique = true)
-    private String externalPlaceId;
-    
     @Column(nullable = false)
     private String name;
     
@@ -88,9 +85,7 @@ public class PlaceEntity {
     // Getters and Setters
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
-    
-    public String getExternalPlaceId() { return externalPlaceId; }
-    public void setExternalPlaceId(String externalPlaceId) { this.externalPlaceId = externalPlaceId; }
+
     
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }

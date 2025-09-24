@@ -1,7 +1,7 @@
-package org.laioffer.planner.model.planning;
+package org.laioffer.planner.Recommendations.model.planning;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.laioffer.planner.model.place.PlaceDTO;
+import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PlannedStop {

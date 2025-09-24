@@ -1,4 +1,4 @@
-package org.laioffer.planner.model.planning;
+package org.laioffer.planner.Recommendations.model.planning;
 
 import java.util.List;
 

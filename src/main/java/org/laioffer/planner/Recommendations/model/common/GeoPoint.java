@@ -1,4 +1,4 @@
-package org.laioffer.planner.model.common;
+package org.laioffer.planner.Recommendations.model.common;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

@@ -1,10 +1,11 @@
 package org.laioffer.planner.Recommendations;
 
 import org.laioffer.planner.entity.PlaceEntity;
-import org.laioffer.planner.model.common.GeoPoint;
-import org.laioffer.planner.model.place.ContactDTO;
-import org.laioffer.planner.model.place.OpeningHoursDTO;
-import org.laioffer.planner.model.place.PlaceDTO;
+import org.laioffer.planner.entity.ItineraryPlaceEntity;
+import org.laioffer.planner.Recommendations.model.common.GeoPoint;
+import org.laioffer.planner.Recommendations.model.place.ContactDTO;
+import org.laioffer.planner.Recommendations.model.place.OpeningHoursDTO;
+import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -12,39 +13,53 @@ import java.util.Map;
 
 @Component
 public class PlaceMapper {
-    
     /**
-     * Convert PlaceEntity to PlaceDTO
+     * Convert ItineraryPlaceEntity to PlaceDTO using denormalized fields
      */
-    public PlaceDTO toDTO(PlaceEntity entity) {
-        if (entity == null) {
+    public PlaceDTO toItineraryPlaceDTO(ItineraryPlaceEntity itineraryPlace) {
+        if (itineraryPlace == null) {
+            return null;
+        }
+        
+        PlaceEntity place = itineraryPlace.getPlace();
+        if (place == null) {
             return null;
         }
         
         PlaceDTO dto = new PlaceDTO();
-        dto.setId(entity.getId());
-        dto.setName(entity.getName());
-        dto.setAddress(entity.getAddress());
-        dto.setImageUrl(entity.getImageUrl());
-        dto.setDescription(entity.getDescription());
+        
+        // Basic place fields
+        dto.setId(place.getId());
+        dto.setAddress(place.getAddress());
+        dto.setImageUrl(place.getImageUrl());
+        
+        // Use denormalized fields from ItineraryPlaceEntity
+        dto.setName(itineraryPlace.getName());
+        dto.setDescription(itineraryPlace.getDescription());
+        
+        // Itinerary-specific fields
+        dto.setItineraryPlaceId(itineraryPlace.getId());
+        dto.setPinned(itineraryPlace.isPinned());
+        dto.setNote(itineraryPlace.getNote());
+        dto.setAddedAt(itineraryPlace.getAddedAt());
         
         // Convert coordinates to GeoPoint
-        if (entity.getLatitude() != null && entity.getLongitude() != null) {
+        if (place.getLatitude() != null && place.getLongitude() != null) {
             GeoPoint location = new GeoPoint(
-                entity.getLatitude().doubleValue(),
-                entity.getLongitude().doubleValue()
+                place.getLatitude().doubleValue(),
+                place.getLongitude().doubleValue()
             );
             dto.setLocation(location);
         }
         
         // Convert contact info from JSONB
-        ContactDTO contact = extractContactInfo(entity);
+        ContactDTO contact = extractContactInfo(place);
         if (contact != null) {
             dto.setContact(contact);
         }
         
         // Convert opening hours from JSONB
-        OpeningHoursDTO openingHours = extractOpeningHours(entity);
+        OpeningHoursDTO openingHours = extractOpeningHours(place);
         if (openingHours != null) {
             dto.setOpeningHours(openingHours);
         }

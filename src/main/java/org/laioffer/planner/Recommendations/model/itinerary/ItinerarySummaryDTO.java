@@ -1,12 +1,12 @@
-package org.laioffer.planner.model.itinerary;
+package org.laioffer.planner.Recommendations.model.itinerary;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.OffsetDateTime;
+import java.util.UUID;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class CreateItineraryRequest {
+public class ItinerarySummaryDTO {
+    private UUID id;
     private String destinationCity;
     
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
@@ -16,16 +16,24 @@ public class CreateItineraryRequest {
     private OffsetDateTime endDate;
     
     private TravelMode travelMode;
-    private Integer budgetLimitCents;
-    private String dailyStart;
-    private String dailyEnd;
     
-    public CreateItineraryRequest() {}
+    public ItinerarySummaryDTO() {}
     
-    public CreateItineraryRequest(String destinationCity, OffsetDateTime startDate, OffsetDateTime endDate) {
+    public ItinerarySummaryDTO(UUID id, String destinationCity, OffsetDateTime startDate, 
+                              OffsetDateTime endDate, TravelMode travelMode) {
+        this.id = id;
         this.destinationCity = destinationCity;
         this.startDate = startDate;
         this.endDate = endDate;
+        this.travelMode = travelMode;
+    }
+    
+    public UUID getId() {
+        return id;
+    }
+    
+    public void setId(UUID id) {
+        this.id = id;
     }
     
     public String getDestinationCity() {
@@ -60,40 +68,14 @@ public class CreateItineraryRequest {
         this.travelMode = travelMode;
     }
     
-    public Integer getBudgetLimitCents() {
-        return budgetLimitCents;
-    }
-    
-    public void setBudgetLimitCents(Integer budgetLimitCents) {
-        this.budgetLimitCents = budgetLimitCents;
-    }
-    
-    public String getDailyStart() {
-        return dailyStart;
-    }
-    
-    public void setDailyStart(String dailyStart) {
-        this.dailyStart = dailyStart;
-    }
-    
-    public String getDailyEnd() {
-        return dailyEnd;
-    }
-    
-    public void setDailyEnd(String dailyEnd) {
-        this.dailyEnd = dailyEnd;
-    }
-    
     @Override
     public String toString() {
-        return "CreateItineraryRequest{" +
-                "destinationCity='" + destinationCity + '\'' +
+        return "ItinerarySummaryDTO{" +
+                "id=" + id +
+                ", destinationCity='" + destinationCity + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", travelMode=" + travelMode +
-                ", budgetLimitCents=" + budgetLimitCents +
-                ", dailyStart='" + dailyStart + '\'' +
-                ", dailyEnd='" + dailyEnd + '\'' +
                 '}';
     }
 }

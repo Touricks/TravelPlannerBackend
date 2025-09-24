@@ -1,15 +1,17 @@
-package org.laioffer.planner.model.planning;
+package org.laioffer.planner.Recommendations.model.itinerary;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import org.laioffer.planner.model.itinerary.TravelMode;
+import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PlanItineraryRequest {
-    private List<String> interestPlaceIds;
+public class CreateItineraryResponse {
+    private UUID itineraryId;
+    private String destinationCity;
     
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
     private OffsetDateTime startDate;
@@ -18,20 +20,27 @@ public class PlanItineraryRequest {
     private OffsetDateTime endDate;
     
     private TravelMode travelMode;
+    private Integer budgetLimitCents;
     private String dailyStart;
     private String dailyEnd;
-    private boolean avoidCrowds = false;
-    private boolean minimizeTransfers = false;
-    private boolean balanceCategories = true;
+    private List<PlaceDTO> seededRecommendations;
     
-    public PlanItineraryRequest() {}
+    public CreateItineraryResponse() {}
     
-    public List<String> getInterestPlaceIds() {
-        return interestPlaceIds;
+    public UUID getItineraryId() {
+        return itineraryId;
     }
     
-    public void setInterestPlaceIds(List<String> interestPlaceIds) {
-        this.interestPlaceIds = interestPlaceIds;
+    public void setItineraryId(UUID itineraryId) {
+        this.itineraryId = itineraryId;
+    }
+    
+    public String getDestinationCity() {
+        return destinationCity;
+    }
+    
+    public void setDestinationCity(String destinationCity) {
+        this.destinationCity = destinationCity;
     }
     
     public OffsetDateTime getStartDate() {
@@ -58,6 +67,14 @@ public class PlanItineraryRequest {
         this.travelMode = travelMode;
     }
     
+    public Integer getBudgetLimitCents() {
+        return budgetLimitCents;
+    }
+    
+    public void setBudgetLimitCents(Integer budgetLimitCents) {
+        this.budgetLimitCents = budgetLimitCents;
+    }
+    
     public String getDailyStart() {
         return dailyStart;
     }
@@ -74,42 +91,26 @@ public class PlanItineraryRequest {
         this.dailyEnd = dailyEnd;
     }
     
-    public boolean isAvoidCrowds() {
-        return avoidCrowds;
+    public List<PlaceDTO> getSeededRecommendations() {
+        return seededRecommendations;
     }
     
-    public void setAvoidCrowds(boolean avoidCrowds) {
-        this.avoidCrowds = avoidCrowds;
-    }
-    
-    public boolean isMinimizeTransfers() {
-        return minimizeTransfers;
-    }
-    
-    public void setMinimizeTransfers(boolean minimizeTransfers) {
-        this.minimizeTransfers = minimizeTransfers;
-    }
-    
-    public boolean isBalanceCategories() {
-        return balanceCategories;
-    }
-    
-    public void setBalanceCategories(boolean balanceCategories) {
-        this.balanceCategories = balanceCategories;
+    public void setSeededRecommendations(List<PlaceDTO> seededRecommendations) {
+        this.seededRecommendations = seededRecommendations;
     }
     
     @Override
     public String toString() {
-        return "PlanItineraryRequest{" +
-                "interestPlaceIds=" + interestPlaceIds +
+        return "CreateItineraryResponse{" +
+                "itineraryId=" + itineraryId +
+                ", destinationCity='" + destinationCity + '\'' +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
                 ", travelMode=" + travelMode +
+                ", budgetLimitCents=" + budgetLimitCents +
                 ", dailyStart='" + dailyStart + '\'' +
                 ", dailyEnd='" + dailyEnd + '\'' +
-                ", avoidCrowds=" + avoidCrowds +
-                ", minimizeTransfers=" + minimizeTransfers +
-                ", balanceCategories=" + balanceCategories +
+                ", seededRecommendations=" + seededRecommendations +
                 '}';
     }
 }

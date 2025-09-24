@@ -1,6 +1,6 @@
 package org.laioffer.planner.user.authentication;
 
-import org.laioffer.planner.user.UserEntity;
+import org.laioffer.planner.entity.UserEntity;
 import org.laioffer.planner.user.UserRepository;
 import org.laioffer.planner.user.model.UserRole;
 import org.laioffer.planner.user.security.JwtHandler;
