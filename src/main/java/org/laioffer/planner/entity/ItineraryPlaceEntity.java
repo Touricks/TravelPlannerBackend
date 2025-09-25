@@ -5,23 +5,31 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "itinerary_places")
+@Table(name = "itinerary_places", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"itinerary_id", "place_id"})
+})
 @EntityListeners(AuditingEntityListener.class)
 public class ItineraryPlaceEntity {
     
-    @EmbeddedId
-    private ItineraryPlaceId id;
+    @Id
+    @GeneratedValue
+    private UUID id;
+    
+    @Column(name = "itinerary_id", nullable = false)
+    private UUID itineraryId;
+    
+    @Column(name = "place_id", nullable = false)
+    private UUID placeId;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("itineraryId")
-    @JoinColumn(name = "itinerary_id")
+    @JoinColumn(name = "itinerary_id", insertable = false, updatable = false)
     private ItineraryEntity itinerary;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("placeId")
-    @JoinColumn(name = "place_id")
+    @JoinColumn(name = "place_id", insertable = false, updatable = false)
     private PlaceEntity place;
     
     @Column(name = "name", nullable = false)
@@ -46,7 +54,8 @@ public class ItineraryPlaceEntity {
     public ItineraryPlaceEntity(ItineraryEntity itinerary, PlaceEntity place) {
         this.itinerary = itinerary;
         this.place = place;
-        this.id = new ItineraryPlaceId(itinerary.getId(), place.getId());
+        this.itineraryId = itinerary.getId();
+        this.placeId = place.getId();
         // Copy name and description from place entity
         this.name = place.getName();
         this.description = place.getDescription();
@@ -63,12 +72,28 @@ public class ItineraryPlaceEntity {
     }
     
     // Getters and Setters
-    public ItineraryPlaceId getId() {
+    public UUID getId() {
         return id;
     }
     
-    public void setId(ItineraryPlaceId id) {
+    public void setId(UUID id) {
         this.id = id;
+    }
+    
+    public UUID getItineraryId() {
+        return itineraryId;
+    }
+    
+    public void setItineraryId(UUID itineraryId) {
+        this.itineraryId = itineraryId;
+    }
+    
+    public UUID getPlaceId() {
+        return placeId;
+    }
+    
+    public void setPlaceId(UUID placeId) {
+        this.placeId = placeId;
     }
     
     public ItineraryEntity getItinerary() {

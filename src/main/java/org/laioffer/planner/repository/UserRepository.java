@@ -1,4 +1,4 @@
-package org.laioffer.planner.user;
+package org.laioffer.planner.repository;
 
 import org.laioffer.planner.entity.UserEntity;
 import org.laioffer.planner.user.model.UserRole;

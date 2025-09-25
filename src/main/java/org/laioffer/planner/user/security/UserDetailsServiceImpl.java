@@ -1,7 +1,7 @@
 package org.laioffer.planner.user.security;
 
 import org.laioffer.planner.entity.UserEntity;
-import org.laioffer.planner.user.UserRepository;
+import org.laioffer.planner.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

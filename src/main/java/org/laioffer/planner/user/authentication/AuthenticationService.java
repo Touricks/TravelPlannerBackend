@@ -1,7 +1,7 @@
 package org.laioffer.planner.user.authentication;
 
 import org.laioffer.planner.entity.UserEntity;
-import org.laioffer.planner.user.UserRepository;
+import org.laioffer.planner.repository.UserRepository;
 import org.laioffer.planner.user.model.UserRole;
 import org.laioffer.planner.user.security.JwtHandler;
 import org.springframework.security.authentication.AuthenticationManager;

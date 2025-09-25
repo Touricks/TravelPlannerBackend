@@ -1,7 +1,7 @@
-package org.laioffer.planner.Recommendations;
+package org.laioffer.planner.repository;
 
-import org.laioffer.planner.entity.PlaceEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
+import org.laioffer.planner.entity.PlaceEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,7 +23,7 @@ public interface PlaceRepository extends JpaRepository<PlaceEntity, UUID> {
      * @return Page of itinerary places (both pinned and unpinned)
      */
     @Query("SELECT ip FROM ItineraryPlaceEntity ip " +
-           "WHERE ip.id.itineraryId = :itineraryId " +
+           "WHERE ip.itineraryId = :itineraryId " +
            "AND (:query IS NULL OR :query = '' OR " +
            " LOWER(ip.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            " LOWER(ip.description) LIKE LOWER(CONCAT('%', :query, '%')))")

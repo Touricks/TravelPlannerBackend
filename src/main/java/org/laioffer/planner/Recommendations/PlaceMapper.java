@@ -38,7 +38,7 @@ public class PlaceMapper {
         dto.setDescription(itineraryPlace.getDescription());
         
         // Itinerary-specific fields
-        dto.setItineraryPlaceId(itineraryPlace.getId());
+        dto.setItineraryPlaceRecordId(itineraryPlace.getId());
         dto.setPinned(itineraryPlace.isPinned());
         dto.setNote(itineraryPlace.getNote());
         dto.setAddedAt(itineraryPlace.getAddedAt());

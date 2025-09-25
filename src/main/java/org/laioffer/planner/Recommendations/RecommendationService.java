@@ -4,6 +4,8 @@ import org.laioffer.planner.entity.ItineraryPlaceEntity;
 import org.laioffer.planner.Recommendations.model.common.PageMeta;
 import org.laioffer.planner.Recommendations.model.itinerary.GetRecommendationsResponse;
 import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
+import org.laioffer.planner.repository.ItineraryPlaceRepository;
+import org.laioffer.planner.repository.PlaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -79,8 +81,8 @@ public class RecommendationService {
      */
     public RecommendationStats getRecommendationStats(UUID itineraryId) {
         long totalPlaces = placeRepository.count();
-        long pinnedPlaces = itineraryPlaceRepository.countByIdItineraryIdAndPinned(itineraryId, true);
-        long unpinnedPlaces = itineraryPlaceRepository.countByIdItineraryIdAndPinned(itineraryId, false);
+        long pinnedPlaces = itineraryPlaceRepository.countByItineraryIdAndPinned(itineraryId, true);
+        long unpinnedPlaces = itineraryPlaceRepository.countByItineraryIdAndPinned(itineraryId, false);
         long totalSaved = pinnedPlaces + unpinnedPlaces;
         long availableRecommendations = totalPlaces - pinnedPlaces;
         

@@ -1,7 +1,6 @@
-package org.laioffer.planner.Recommendations;
+package org.laioffer.planner.repository;
 
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
-import org.laioffer.planner.entity.ItineraryPlaceId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -13,35 +12,35 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEntity, ItineraryPlaceId> {
+public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEntity, UUID> {
     
     /**
      * Find all places for a specific itinerary
      */
-    List<ItineraryPlaceEntity> findByIdItineraryId(UUID itineraryId);
+    List<ItineraryPlaceEntity> findByItineraryId(UUID itineraryId);
     
     /**
      * Check if a specific place is already added to an itinerary
      */
-    boolean existsByIdItineraryIdAndIdPlaceId(UUID itineraryId, UUID placeId);
+    boolean existsByItineraryIdAndPlaceId(UUID itineraryId, UUID placeId);
     
     /**
      * Find places by itinerary and pinned status
      */
-    List<ItineraryPlaceEntity> findByIdItineraryIdAndPinned(UUID itineraryId, boolean pinned);
+    List<ItineraryPlaceEntity> findByItineraryIdAndPinned(UUID itineraryId, boolean pinned);
     
     /**
      * Find pinned places for an itinerary
      */
     default List<ItineraryPlaceEntity> findPinnedPlaces(UUID itineraryId) {
-        return findByIdItineraryIdAndPinned(itineraryId, true);
+        return findByItineraryIdAndPinned(itineraryId, true);
     }
     
     /**
      * Find unpinned places for an itinerary
      */
     default List<ItineraryPlaceEntity> findUnpinnedPlaces(UUID itineraryId) {
-        return findByIdItineraryIdAndPinned(itineraryId, false);
+        return findByItineraryIdAndPinned(itineraryId, false);
     }
     
     /**
@@ -49,28 +48,28 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
      */
     @Modifying
     @Transactional
-    void deleteByIdItineraryIdAndIdPlaceId(UUID itineraryId, UUID placeId);
+    void deleteByItineraryIdAndPlaceId(UUID itineraryId, UUID placeId);
     
     /**
      * Count places in an itinerary
      */
-    long countByIdItineraryId(UUID itineraryId);
+    long countByItineraryId(UUID itineraryId);
     
     /**
      * Count pinned places in an itinerary
      */
-    long countByIdItineraryIdAndPinned(UUID itineraryId, boolean pinned);
+    long countByItineraryIdAndPinned(UUID itineraryId, boolean pinned);
     
     /**
      * Get place IDs for an itinerary (useful for recommendation filtering)
      */
-    @Query("SELECT ip.id.placeId FROM ItineraryPlaceEntity ip WHERE ip.id.itineraryId = :itineraryId")
+    @Query("SELECT ip.placeId FROM ItineraryPlaceEntity ip WHERE ip.itineraryId = :itineraryId")
     List<UUID> findPlaceIdsByItineraryId(@Param("itineraryId") UUID itineraryId);
     
     /**
      * Get only pinned place IDs for an itinerary (useful for recommendations)
      */
-    @Query("SELECT ip.id.placeId FROM ItineraryPlaceEntity ip WHERE ip.id.itineraryId = :itineraryId AND ip.pinned = true")
+    @Query("SELECT ip.placeId FROM ItineraryPlaceEntity ip WHERE ip.itineraryId = :itineraryId AND ip.pinned = true")
     List<UUID> findPinnedPlaceIdsByItineraryId(@Param("itineraryId") UUID itineraryId);
     
     /**
@@ -78,7 +77,7 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
      */
     @Modifying
     @Transactional
-    @Query("UPDATE ItineraryPlaceEntity ip SET ip.pinned = :pinned WHERE ip.id.itineraryId = :itineraryId AND ip.id.placeId = :placeId")
+    @Query("UPDATE ItineraryPlaceEntity ip SET ip.pinned = :pinned WHERE ip.itineraryId = :itineraryId AND ip.placeId = :placeId")
     void updatePinnedStatus(@Param("itineraryId") UUID itineraryId, 
                            @Param("placeId") UUID placeId, 
                            @Param("pinned") boolean pinned);
@@ -88,7 +87,7 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
      */
     @Modifying
     @Transactional
-    @Query("UPDATE ItineraryPlaceEntity ip SET ip.note = :note WHERE ip.id.itineraryId = :itineraryId AND ip.id.placeId = :placeId")
+    @Query("UPDATE ItineraryPlaceEntity ip SET ip.note = :note WHERE ip.itineraryId = :itineraryId AND ip.placeId = :placeId")
     void updateNote(@Param("itineraryId") UUID itineraryId, 
                     @Param("placeId") UUID placeId, 
                     @Param("note") String note);
