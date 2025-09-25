@@ -1,4 +1,4 @@
-package org.example.aitripplanner;
+package org.laioffer.planner;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

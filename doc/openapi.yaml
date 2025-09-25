@@ -17,7 +17,6 @@ paths:
   /itineraries:
     post:
       summary: Create a new itinerary
-
       operationId: createItinerary
       tags: [Itineraries]
       requestBody:
@@ -29,16 +28,6 @@ paths:
       responses:
         '201':
           description: Created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CreateItineraryResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '500':
-          $ref: '#/components/responses/ServerError'
 
   /itineraries/{itineraryId}/recommendations:
     get:
@@ -61,7 +50,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GetRecommendationsResponse'
+                $ref: '#/components/schemas/RecommendationsResponse'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -293,6 +282,10 @@ components:
         imageUrl: { type: string, format: uri, nullable: true }
         description: { type: string, nullable: true }
         openingHours: { $ref: '#/components/schemas/OpeningHoursDTO' }
+        itineraryPlaceId: { type: integer }
+        pinned: { type: boolean, nullable: true }
+        note: { type: string, nullable: true }
+        addedAt: { type: string, format: date-time, nullable: true }
       required: [id, name, location, address]
 
     # 1) Create Itinerary
@@ -350,7 +343,7 @@ components:
     AddInterestRequest:
       type: object
       properties:
-        placeId: { type: string }
+        Itinerary_placeId: { type: string }
         pinned:
           type: boolean
           description: Whether to mark the place as pinned/favorite.
@@ -414,8 +407,7 @@ components:
       type: object
       properties:
         order: { type: integer, example: 1 }
-        place:
-          $ref: '#/components/schemas/PlaceDTO'
+        place: { type: string, example: "Atlanta fox news"}
         arrivalLocal: { type: string, example: "10:15" }
         departLocal: { type: string, example: "11:30" }
         stayMinutes: { type: integer, example: 75 }
