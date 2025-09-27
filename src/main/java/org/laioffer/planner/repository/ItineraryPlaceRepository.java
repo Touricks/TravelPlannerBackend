@@ -17,7 +17,12 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
     /**
      * Find all places for a specific itinerary
      */
-    List<ItineraryPlaceEntity> findByItineraryId(UUID itineraryId);
+    List<ItineraryPlaceEntity> findAllByItineraryId(UUID itineraryId);
+
+    /**
+     * Find a subset of places for a specific itinerary by their IDs.
+     */
+    List<ItineraryPlaceEntity> findAllByItineraryIdAndIdIn(UUID itineraryId, List<UUID> ids);
     
     /**
      * Check if a specific place is already added to an itinerary
