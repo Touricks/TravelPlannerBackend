@@ -1,4 +1,4 @@
-package org.laioffer.planner.planning;
+package org.laioffer.planner.Planning;
 
 import org.laioffer.planner.Recommendations.model.planning.PlanItineraryRequest;
 import org.laioffer.planner.Recommendations.model.planning.PlanItineraryResponse;

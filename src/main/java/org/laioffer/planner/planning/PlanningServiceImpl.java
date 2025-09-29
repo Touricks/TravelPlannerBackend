@@ -1,10 +1,10 @@
-package org.laioffer.planner.planning;
+package org.laioffer.planner.Planning;
 
 import org.laioffer.planner.Recommendations.model.planning.PlanItineraryRequest;
 import org.laioffer.planner.Recommendations.model.planning.PlanItineraryResponse;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
-import org.laioffer.planner.planning.exception.ItineraryNotFoundException;
+import org.laioffer.planner.Planning.exception.ItineraryNotFoundException;
 import org.laioffer.planner.repository.ItineraryPlaceRepository;
 import org.laioffer.planner.repository.ItineraryRepository;
 import org.springframework.stereotype.Service;

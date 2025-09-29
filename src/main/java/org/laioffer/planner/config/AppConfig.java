@@ -48,6 +48,9 @@ public class AppConfig {
                     .requestMatchers(HttpMethod.GET, "/", "/index.html", "/*.json", "/*.png",
                     "/static/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/logout").permitAll()
+                    // Temporarily allow testing of Recommendations and Planning APIs without authentication
+                    .requestMatchers("/api/v1/itineraries/*/recommendations/**").permitAll()
+                    .requestMatchers("/v1/itineraries/*/plan").permitAll()
                     .anyRequest().authenticated()
         )
             .sessionManagement(session -> 

@@ -1,4 +1,4 @@
-package org.laioffer.planner.planning.exception;
+package org.laioffer.planner.Planning.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

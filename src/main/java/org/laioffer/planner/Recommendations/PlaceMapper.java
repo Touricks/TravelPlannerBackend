@@ -4,11 +4,16 @@ import org.laioffer.planner.entity.PlaceEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
 import org.laioffer.planner.Recommendations.model.common.GeoPoint;
 import org.laioffer.planner.Recommendations.model.place.ContactDTO;
+import org.laioffer.planner.Recommendations.model.place.DailyHours;
 import org.laioffer.planner.Recommendations.model.place.OpeningHoursDTO;
 import org.laioffer.planner.Recommendations.model.place.PlaceDTO;
+import org.laioffer.planner.Recommendations.model.place.TimeRange;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -25,7 +30,6 @@ public class PlaceMapper {
         if (place == null) {
             return null;
         }
-        
         PlaceDTO dto = new PlaceDTO();
         
         // Basic place fields
@@ -114,24 +118,100 @@ public class PlaceMapper {
         }
         
         Map<String, Object> hoursData = entity.getOpeningHours();
-        
-        // For now, just return the raw data as a string
-        // In the future, this could be enhanced to parse structured hours
         OpeningHoursDTO openingHours = new OpeningHoursDTO();
         
-        // Try to extract raw text or convert map to string
-        Object rawHours = hoursData.get("raw");
-        if (rawHours instanceof String) {
-            openingHours.setRaw((String) rawHours);
-        } else {
-            // Convert the entire map to a readable string as fallback
+        try {
+            // Parse normalized hours from nested weekday objects
+            List<DailyHours> normalizedHours = parseNormalizedHours(hoursData);
+            openingHours.setNormalized(normalizedHours);
+            
+            // Generate readable raw text
+            String rawText = generateRawText(hoursData);
+            openingHours.setRaw(rawText);
+            
+        } catch (Exception e) {
+            // Fallback to raw string representation if parsing fails
             openingHours.setRaw(hoursData.toString());
         }
         
-        // TODO: Parse normalized hours structure when needed
-        // This would require defining DailyHours and TimeRange classes
-        
         return openingHours;
+    }
+    
+    /**
+     * Parse normalized hours from JSONB weekday objects
+     * Expected format: {"monday": {"open": "00:00", "close": "23:59"}, ...}
+     */
+    private List<DailyHours> parseNormalizedHours(Map<String, Object> hoursData) {
+        List<DailyHours> dailyHoursList = new ArrayList<>();
+        List<String> weekdays = Arrays.asList("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday");
+        
+        for (String weekday : weekdays) {
+            Object dayData = hoursData.get(weekday);
+            if (dayData instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> dayMap = (Map<String, Object>) dayData;
+                
+                Object openTime = dayMap.get("open");
+                Object closeTime = dayMap.get("close");
+                
+                if (openTime instanceof String && closeTime instanceof String) {
+                    TimeRange timeRange = new TimeRange((String) openTime, (String) closeTime);
+                    List<TimeRange> timeRanges = new ArrayList<>();
+                    timeRanges.add(timeRange);
+                    
+                    DailyHours dailyHours = new DailyHours(weekday, timeRanges);
+                    dailyHoursList.add(dailyHours);
+                }
+            }
+        }
+        
+        return dailyHoursList;
+    }
+    
+    /**
+     * Generate readable raw text from hours data
+     */
+    private String generateRawText(Map<String, Object> hoursData) {
+        StringBuilder rawText = new StringBuilder();
+        List<String> weekdays = Arrays.asList("monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday");
+        
+        for (int i = 0; i < weekdays.size(); i++) {
+            String weekday = weekdays.get(i);
+            Object dayData = hoursData.get(weekday);
+            
+            if (i > 0) {
+                rawText.append(", ");
+            }
+            
+            rawText.append(capitalizeFirst(weekday)).append(": ");
+            
+            if (dayData instanceof Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> dayMap = (Map<String, Object>) dayData;
+                Object openTime = dayMap.get("open");
+                Object closeTime = dayMap.get("close");
+                
+                if (openTime instanceof String && closeTime instanceof String) {
+                    rawText.append(openTime).append("-").append(closeTime);
+                } else {
+                    rawText.append("closed");
+                }
+            } else {
+                rawText.append("closed");
+            }
+        }
+        
+        return rawText.toString();
+    }
+    
+    /**
+     * Utility method to capitalize first letter of a string
+     */
+    private String capitalizeFirst(String str) {
+        if (str == null || str.isEmpty()) {
+            return str;
+        }
+        return str.substring(0, 1).toUpperCase() + str.substring(1);
     }
     
     /**
