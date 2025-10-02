@@ -5,11 +5,11 @@
 -- Insert test users (passwords are BCrypt encoded)
 -- Note: created_at and updated_at are auto-populated by JPA auditing
 -- One-row-per-statement to avoid parser issues; include audit columns explicitly
-INSERT INTO users (role, email, username, password, created_at, updated_at) VALUES ('USER', 'f36meng@gmail.com', 'f36meng', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users (role, email, username, password, created_at, updated_at) VALUES ('USER', 'f36meng@gmail.com', 'f36meng', 'hm06050821', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO users (role, email, username, password, created_at, updated_at) VALUES ('ADMIN', 'fmeng48@gmail.com', 'fmeng48', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users (role, email, username, password, created_at, updated_at) VALUES ('ADMIN', 'fmeng48@gmail.com', 'fmeng48', 'hm06050821', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
-INSERT INTO users (role, email, username, password, created_at, updated_at) VALUES ('USER', 'testuser@example.com', 'testuser', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2uheWG/igi.', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+INSERT INTO users (role, email, username, password, created_at, updated_at) VALUES ('USER', 'testuser@example.com', 'testuser', 'hm06050821', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 -- Insert sample places with JSONB data
 -- Note: created_at and updated_at are auto-populated by JPA auditing

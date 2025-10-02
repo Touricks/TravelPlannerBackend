@@ -32,6 +32,21 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE UserEntity u SET u.username = :username WHERE u.id = :id")
-    void updateUsernameById(@Param("id") Long id, 
+    void updateUsernameById(@Param("id") Long id,
                            @Param("username") String username);
+
+    Optional<UserEntity> findByResetToken(String resetToken);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE UserEntity u SET u.resetToken = :resetToken, u.resetTokenExpiry = :expiry WHERE u.email = :email")
+    void updateResetToken(@Param("email") String email,
+                         @Param("resetToken") String resetToken,
+                         @Param("expiry") java.time.LocalDateTime expiry);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE UserEntity u SET u.password = :password, u.resetToken = null, u.resetTokenExpiry = null WHERE u.id = :id")
+    void updatePasswordAndClearResetToken(@Param("id") Long id,
+                                         @Param("password") String password);
 }

@@ -1,0 +1,311 @@
+{
+	"info": {
+		"_postman_id": "planning-collection-005",
+		"name": "05 - Planning",
+		"description": "Generate optimized itinerary plans with day-by-day schedules",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Plan Itinerary - Basic Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('itineraryId');",
+							"    pm.expect(responseJson).to.have.property('days');",
+							"});",
+							"",
+							"pm.test(\"Days array is present and valid\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.days).to.be.an('array');",
+							"    pm.expect(responseJson.days.length).to.be.greaterThan(0);",
+							"});",
+							"",
+							"pm.test(\"Each day has required fields\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.days.length > 0) {",
+							"        const day = responseJson.days[0];",
+							"        pm.expect(day).to.have.property('dayNumber');",
+							"        pm.expect(day).to.have.property('date');",
+							"        pm.expect(day).to.have.property('stops');",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"Stops have required fields\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.days.length > 0 && responseJson.days[0].stops.length > 0) {",
+							"        const stop = responseJson.days[0].stops[0];",
+							"        pm.expect(stop).to.have.property('place');",
+							"        pm.expect(stop).to.have.property('arrivalTime');",
+							"        pm.expect(stop).to.have.property('departureTime');",
+							"    }",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 10000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"18:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				}
+			}
+		},
+		{
+			"name": "Plan Itinerary - With Transit Mode",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response structure is correct\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('itineraryId');",
+							"    pm.expect(responseJson).to.have.property('days');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"travelMode\": \"TRANSIT\",\n    \"startTime\": \"08:00\",\n    \"endTime\": \"20:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				}
+			}
+		},
+		{
+			"name": "Plan Itinerary - With Driving Mode",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Plan generated successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.days).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"travelMode\": \"DRIVING\",\n    \"startTime\": \"10:00\",\n    \"endTime\": \"19:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				}
+			}
+		},
+		{
+			"name": "Plan Itinerary - Invalid Itinerary ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 or 404 for invalid ID\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"18:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/invalid-uuid/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "invalid-uuid", "plan"]
+				}
+			}
+		},
+		{
+			"name": "Plan Itinerary - Missing Required Fields",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 for missing fields\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"travelMode\": \"WALKING\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				}
+			}
+		},
+		{
+			"name": "Plan Itinerary - Unauthorized",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 for unauthorized\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"18:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				}
+			}
+		}
+	]
+}

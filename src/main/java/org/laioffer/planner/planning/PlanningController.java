@@ -1,7 +1,7 @@
 package org.laioffer.planner.Planning;
 
-import org.laioffer.planner.Recommendations.model.planning.PlanItineraryRequest;
-import org.laioffer.planner.Recommendations.model.planning.PlanItineraryResponse;
+import org.laioffer.planner.Recommendation.model.planning.PlanItineraryRequest;
+import org.laioffer.planner.Recommendation.model.planning.PlanItineraryResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,7 +12,6 @@ import java.util.UUID;
 public class PlanningController {
 
     private final PlanningService planningService;
-
     public PlanningController(PlanningService planningService) {
         this.planningService = planningService;
     }

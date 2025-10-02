@@ -18,7 +18,10 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.cors.CorsConfigurationSource;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.time.Clock;
 
@@ -47,10 +50,11 @@ public class AppConfig {
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                     .requestMatchers(HttpMethod.GET, "/", "/index.html", "/*.json", "/*.png",
                     "/static/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/logout").permitAll()
-                    // Temporarily allow testing of Recommendations and Planning APIs without authentication
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/itineraries/interests","/logout").permitAll()
+                    // Temporarily allow testing of Recommendations, Planning, and Interest APIs without authentication
                     .requestMatchers("/api/v1/itineraries/*/recommendations/**").permitAll()
                     .requestMatchers("/v1/itineraries/*/plan").permitAll()
+                    .requestMatchers("/api/itineraries/interests/**").permitAll()
                     .anyRequest().authenticated()
         )
             .sessionManagement(session -> 
@@ -79,5 +83,17 @@ public class AppConfig {
   @Bean
   public Clock clock() {
     return Clock.systemDefaultZone();
+  }
+
+  @Bean
+  public RestTemplate restTemplate() {
+    return new RestTemplate();
+  }
+
+  @Bean
+  public ObjectMapper objectMapper() {
+    ObjectMapper mapper = new ObjectMapper();
+    mapper.registerModule(new JavaTimeModule());
+    return mapper;
   }
 }

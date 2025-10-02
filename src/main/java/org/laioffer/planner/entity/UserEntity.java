@@ -35,11 +35,17 @@ public class UserEntity implements UserDetails {
     
     @Column(nullable = false)
     private String password;
-    
+
+    @Column(name = "reset_token", unique = true)
+    private String resetToken;
+
+    @Column(name = "reset_token_expiry")
+    private LocalDateTime resetTokenExpiry;
+
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
@@ -131,10 +137,26 @@ public class UserEntity implements UserDetails {
         return createdAt; 
     }
     
-    public LocalDateTime getUpdatedAt() { 
-        return updatedAt; 
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
-    
+
+    public String getResetToken() {
+        return resetToken;
+    }
+
+    public void setResetToken(String resetToken) {
+        this.resetToken = resetToken;
+    }
+
+    public LocalDateTime getResetTokenExpiry() {
+        return resetTokenExpiry;
+    }
+
+    public void setResetTokenExpiry(LocalDateTime resetTokenExpiry) {
+        this.resetTokenExpiry = resetTokenExpiry;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

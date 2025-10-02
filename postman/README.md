@@ -1,159 +1,160 @@
-# AI Trip Planner - Postman Test Collection
+# AI Trip Planner - Postman Collections
 
-## Overview
-This directory contains Postman collections and environments for testing the AI Trip Planner API endpoints.
+This directory contains organized Postman collections for testing the AI Trip Planner API.
 
-## Files
-- `Recommendations_API_Tests.postman_collection.json` - Test collection for Recommendations module
-- `AI_Trip_Planner_Environment.postman_environment.json` - Environment variables for local development
+## Collections Overview
+
+The main collection has been decomposed into separate, focused collections for better organization and maintainability:
+
+### 01 - User Authentication
+**File:** `01_authentication.postman_collection.json`
+
+Covers user authentication flows:
+- User Registration
+- User Login (multiple user roles)
+- Password Reset (Forgot Password & Reset Password)
+- Authentication error handling
+
+**Endpoints:**
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
+
+### 02 - Recommendations
+**File:** `02_recommendations.postman_collection.json`
+
+Tests recommendation retrieval and statistics:
+- Get recommendations with various filters
+- Pagination support
+- Query parameters
+- Recommendation statistics
+
+**Endpoints:**
+- `GET /api/v1/itineraries/{itineraryId}/recommendations`
+- `GET /api/v1/itineraries/{itineraryId}/recommendations/stats`
+
+### 03 - Interest Management
+**File:** `03_interests.postman_collection.json`
+
+Tests user interest and place pinning functionality:
+- Add interests to places
+- Pin/unpin places
+- Update existing interests
+- Authorization and ownership validation
+
+**Endpoints:**
+- `POST /api/itineraries/interests`
+
+### 04 - Itinerary
+**File:** `04_itinerary.postman_collection.json`
+
+Tests itinerary creation and management:
+- Create itineraries with AI recommendations
+- Travel mode preferences
+- Budget and date validation
+
+**Endpoints:**
+- `POST /api/itineraries`
+
+### 05 - Planning
+**File:** `05_planning.postman_collection.json`
+
+Tests itinerary planning and optimization:
+- Generate day-by-day plans
+- Different travel modes (WALKING, TRANSIT, DRIVING)
+- Time-based scheduling
+- Route optimization
+
+**Endpoints:**
+- `POST /v1/itineraries/{itineraryId}/plan`
+
+## Environment Configuration
+
+**File:** `ai_trip_planner.postman_environment.json`
+
+### Variables:
+- `baseUrl` - API base URL (default: http://localhost:8080)
+- `authToken` - JWT token for authenticated user
+- `adminAuthToken` - JWT token for admin user
+- `differentUserAuthToken` - JWT token for different user (ownership tests)
+- `itineraryId` - Sample itinerary UUID
+- `samplePlaceId` - Sample Google Place ID
+- `samplePlaceId2` - Second sample Google Place ID
+- `nonexistentItineraryId` - UUID for testing 404 scenarios
+- `nonexistentPlaceId` - Invalid Place ID for testing
+- `resetToken` - Password reset token
 
 ## Setup Instructions
 
-### 1. Import Collection and Environment
-1. Open Postman
-2. Click "Import" button
-3. Select and import both JSON files
-4. Select "AI Trip Planner - Local Development" environment
+1. **Import Collections:**
+   - Import all 5 collection files into Postman
+   - Import the environment file
 
-### 2. Configure Environment Variables
-Update the following variables in your environment as needed:
+2. **Configure Environment:**
+   - Select "AI Trip Planner - Environment" from the environment dropdown
+   - Update `baseUrl` if your server runs on a different port
 
-| Variable | Description | Default Value |
-|----------|-------------|---------------|
-| `baseUrl` | API base URL | `http://localhost:8080` |
-| `itineraryId` | Test itinerary UUID | `550e8400-e29b-41d4-a716-446655440000` |
-| `testUserId` | Test user ID | `123e4567-e89b-12d3-a456-426614174000` |
-| `authToken` | JWT authentication token | (empty, set during test execution) |
+3. **Running Tests:**
+   - **Recommended Order:**
+     1. Authentication (to get auth tokens)
+     2. Itinerary (to create test itineraries)
+     3. Recommendations
+     4. Interests
+     5. Planning
 
-### 3. Prerequisites
-Before running tests, ensure:
-- Your API server is running on the configured `baseUrl`
-- Database has test data with the configured `itineraryId`
-- Required test itinerary and places exist in the database
+4. **Authentication Flow:**
+   - Run a login request first to populate `authToken`
+   - The token is automatically saved to the environment
+   - Subsequent requests use this token for authorization
 
 ## Test Coverage
 
-### Recommendations Module (`/api/v1/itineraries/{itineraryId}/recommendations`)
+Each collection includes:
+- ✅ Happy path scenarios
+- ✅ Validation error cases
+- ✅ Authorization/Authentication errors
+- ✅ Invalid input handling
+- ✅ Response time assertions
+- ✅ Response structure validation
 
-#### Get Recommendations Endpoint
-- ✅ Basic request without parameters
-- ✅ Request with query parameter filtering
-- ✅ Request with pagination parameters
-- ✅ Invalid itinerary ID handling
-- ✅ Large page size validation (> 200)
-- ✅ Combined parameters test
+## Running Collections
 
-#### Get Recommendation Stats Endpoint (`/recommendations/stats`)
-- ✅ Basic stats request
-- ✅ Invalid itinerary ID handling
-
-### Test Scenarios Covered
-
-#### Happy Path Tests
-1. **Basic Recommendations** - Fetches recommendations with default pagination
-2. **Filtered Recommendations** - Tests query parameter functionality
-3. **Paginated Results** - Validates pagination works correctly
-4. **Combined Parameters** - Tests multiple query parameters together
-
-#### Error Handling Tests
-1. **Invalid UUID** - Tests 400 response for malformed UUIDs
-2. **Large Page Size** - Tests validation for page size > 200
-3. **Non-existent Itinerary** - Tests handling of valid UUID but non-existent resource
-
-#### Performance Tests
-- Response time validation (< 2000ms for recommendations, < 1000ms for stats)
-
-## Test Assertions
-
-### Response Structure Validation
-- Status codes (200, 400, 500)
-- Response content type (application/json)
-- Required fields presence
-- Data types validation
-
-### Business Logic Validation
-- Pagination metadata accuracy
-- Query filtering effectiveness
-- Response time performance
-- Error message appropriateness
-
-## Running Tests
-
-### Individual Test Execution
-1. Select specific request from collection
-2. Click "Send" button
-3. Review test results in "Test Results" tab
-
-### Collection Runner
-1. Click on collection name
-2. Click "Run collection" button
-3. Select environment and configure options
-4. Click "Run AI Trip Planner - Recommendations API"
-
-### Newman (CLI) Execution
+### Single Collection:
 ```bash
-# Install Newman globally
-npm install -g newman
-
-# Run collection
-newman run Recommendations_API_Tests.postman_collection.json \
-  -e AI_Trip_Planner_Environment.postman_environment.json \
-  --reporters cli,json \
-  --reporter-json-export results.json
+newman run 01_authentication.postman_collection.json \
+  -e ai_trip_planner.postman_environment.json
 ```
 
-## Sample Test Data Setup
-
-To ensure tests run successfully, your database should contain:
-
-### Sample Itinerary
-```sql
-INSERT INTO itineraries (id, name, user_id, created_at, updated_at) 
-VALUES ('550e8400-e29b-41d4-a716-446655440000', 'Test Itinerary', '123e4567-e89b-12d3-a456-426614174000', NOW(), NOW());
+### All Collections:
+```bash
+for collection in *.postman_collection.json; do
+  newman run "$collection" -e ai_trip_planner.postman_environment.json
+done
 ```
 
-### Sample Places
-```sql
-INSERT INTO places (id, name, address, latitude, longitude, created_at) VALUES 
-('place1-uuid', 'Test Restaurant', '123 Main St', 40.7128, -74.0060, NOW()),
-('place2-uuid', 'Test Museum', '456 Art Ave', 40.7614, -73.9776, NOW()),
-('place3-uuid', 'Test Park', '789 Green Blvd', 40.7829, -73.9654, NOW());
-```
+## Notes
 
-## Troubleshooting
+- Collections are numbered for recommended execution order
+- Authentication tokens expire after 24 hours (configurable in JWT settings)
+- Some tests depend on database state (ensure fresh state for consistent results)
+- Password reset tests require email service to be configured
 
-### Common Issues
+## Legacy Files
 
-1. **Connection Refused**
-   - Verify API server is running
-   - Check `baseUrl` in environment
+- `postman_testkit.json` - Original monolithic collection (deprecated)
+- `postman_testkit.json.backup` - Backup of original collection
 
-2. **404 Not Found**
-   - Verify itinerary exists in database
-   - Check `itineraryId` in environment
+## Sample Test Data
 
-3. **500 Internal Server Error**
-   - Check server logs
-   - Verify database connectivity
-   - Ensure test data exists
+For Atlanta test queries:
+- Museums: Art museum (edge case test)
+- Mountains: Stone Mountain (edge case test)
 
-### Debug Tips
-- Enable Postman console for detailed logging
-- Check response body for error details
-- Verify environment variable values
-- Use collection variables for dynamic data
+## Contributing
 
-## Future Enhancements
-
-### Planned Test Additions
-- [ ] Authentication and authorization tests
-- [ ] Rate limiting tests
-- [ ] Concurrent request handling
-- [ ] Data validation edge cases
-- [ ] Integration with CI/CD pipeline
-
-### Additional Test Scenarios
-- [ ] Large dataset performance
-- [ ] Unicode and special character handling
-- [ ] SQL injection prevention
-- [ ] CORS policy validation
+When adding new endpoints:
+1. Add tests to the appropriate collection
+2. Update this README with new endpoint documentation
+3. Add any new environment variables to the environment file
+4. Ensure tests include both success and error scenarios

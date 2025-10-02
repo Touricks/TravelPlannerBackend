@@ -3,7 +3,7 @@ package org.laioffer.planner.entity;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
-import org.laioffer.planner.Recommendations.model.itinerary.TravelMode;
+import org.laioffer.planner.Recommendation.model.itinerary.TravelMode;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;

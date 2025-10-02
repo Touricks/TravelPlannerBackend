@@ -1,12 +1,13 @@
 package org.laioffer.planner.itinerary;
 
-import org.laioffer.planner.Recommendations.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
 import org.laioffer.planner.entity.ItineraryEntity;
+import org.laioffer.planner.entity.PlaceEntity;
 import org.laioffer.planner.entity.UserEntity;
 import org.laioffer.planner.repository.ItineraryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -29,14 +31,19 @@ public class ItineraryServiceImpl implements ItineraryService {
     private static final int POI_PER_DAY = 3;
     
     private final ItineraryRepository itineraryRepository;
-    
-    @Autowired
-    public ItineraryServiceImpl(ItineraryRepository itineraryRepository) {
+    private final LangChain4jLLMService llmService;
+    private final POIService poiService;
+
+    public ItineraryServiceImpl(ItineraryRepository itineraryRepository, 
+                               LangChain4jLLMService llmService,
+                               POIService poiService) {
         this.itineraryRepository = itineraryRepository;
+        this.llmService = llmService;
+        this.poiService = poiService;
     }
     
     @Override
-    public UUID createItinerary(CreateItineraryRequest request, UserEntity user) {
+    public void createItinerary(CreateItineraryRequest request, UserEntity user) {
         logger.debug("Creating itinerary for user: {}", user.getId());
         
         validateRequest(request);
@@ -73,7 +80,28 @@ public class ItineraryServiceImpl implements ItineraryService {
         logger.info("Successfully created itinerary: {} for user: {}", 
                 savedItinerary.getId(), user.getId());
         
-        return savedItinerary.getId();
+        try {
+            List<PlaceDTO> recommendedPlaces = llmService.generatePOIRecommendations(savedItinerary, poiCount);
+            List<PlaceEntity> createdPlaces = poiService.createAndAddPlacesToItinerary(recommendedPlaces, savedItinerary);
+            
+            aiMetadata.put("generation_pending", false);
+            aiMetadata.put("generated_places_count", createdPlaces.size());
+            savedItinerary.setAiMetadata(aiMetadata);
+            
+            itineraryRepository.save(savedItinerary);
+            
+            logger.info("Successfully generated {} POI recommendations for itinerary: {}", 
+                    createdPlaces.size(), savedItinerary.getId());
+                    
+        } catch (Exception e) {
+            logger.error("Failed to generate POI recommendations for itinerary: {}", savedItinerary.getId(), e);
+            aiMetadata.put("generation_pending", false);
+            aiMetadata.put("generation_error", e.getMessage());
+        }
+            savedItinerary.setAiMetadata(aiMetadata);
+            itineraryRepository.save(savedItinerary);
+
+
     }
     
     @Override

@@ -60,13 +60,11 @@ paths:
         '500':
           $ref: '#/components/responses/ServerError'
 
-  /itineraries/{itineraryId}/interests:
+  /itineraries/interests:
     post:
       summary: Add a place to the itinerary's interest list
       operationId: addInterest
       tags: [Interests]
-      parameters:
-        - $ref: '#/components/parameters/ItineraryId'
       requestBody:
         required: true
         content:

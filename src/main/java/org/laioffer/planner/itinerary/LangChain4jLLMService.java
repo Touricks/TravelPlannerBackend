@@ -1,0 +1,213 @@
+package org.laioffer.planner.itinerary;
+
+import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
+import org.laioffer.planner.Recommendation.model.common.GeoPoint;
+import org.laioffer.planner.Recommendation.model.place.ContactDTO;
+import org.laioffer.planner.Recommendation.model.place.OpeningHoursDTO;
+import org.laioffer.planner.entity.ItineraryEntity;
+import org.laioffer.planner.itinerary.model.POIRecommendationResponse;
+import org.laioffer.planner.itinerary.model.RecommendedPOI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Service
+public class LangChain4jLLMService {
+    
+    private static final Logger logger = LoggerFactory.getLogger(LangChain4jLLMService.class);
+    private static final int MAX_RETRIES = 3;
+    
+    private final POIRecommendationService poiRecommendationService;
+    
+    public LangChain4jLLMService(POIRecommendationService poiRecommendationService) {
+        this.poiRecommendationService = poiRecommendationService;
+    }
+    
+    public List<PlaceDTO> generatePOIRecommendations(ItineraryEntity itinerary, int maxRecommendations) throws Exception {
+        List<String> errorLog = new ArrayList<>();
+        
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                logger.debug("LangChain4j generation attempt {} for itinerary {}", attempt, itinerary.getId());
+                
+                POIRecommendationResponse response;
+                if (attempt == 1) {
+                    response = generateInitialRecommendations(itinerary, maxRecommendations);
+                } else {
+                    response = generateRecommendationsWithErrorFeedback(itinerary, maxRecommendations, errorLog);
+                }
+                
+                List<PlaceDTO> places = convertToDTOs(response);
+                
+                if (!places.isEmpty()) {
+                    logger.info("Successfully generated {} POI recommendations for itinerary {} using LangChain4j", 
+                            places.size(), itinerary.getId());
+                    return places;
+                }
+                
+                errorLog.add("No valid places were returned from the AI service");
+                
+            } catch (Exception e) {
+                String errorMessage = "Attempt " + attempt + " failed: " + e.getMessage();
+                errorLog.add(errorMessage);
+                
+                logger.warn("LangChain4j generation attempt {} failed for itinerary {}: {}", 
+                        attempt, itinerary.getId(), e.getMessage());
+                
+                if (attempt == MAX_RETRIES) {
+                    throw new Exception("Failed to generate POI recommendations after " + MAX_RETRIES + " attempts using LangChain4j. Errors: " + String.join("; ", errorLog), e);
+                }
+            }
+        }
+        
+        throw new Exception("Failed to generate valid POI recommendations using LangChain4j. Errors: " + String.join("; ", errorLog));
+    }
+    
+    private POIRecommendationResponse generateInitialRecommendations(ItineraryEntity itinerary, int maxRecommendations) {
+        Double budgetInDollars = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() / 100.0 : null;
+        String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : null;
+        
+        // Calculate staying days and daily schedule if available
+        Integer stayingDays = null;
+        String dailyStart = null;
+        String dailyEnd = null;
+        
+        if (itinerary.getStartDate() != null && itinerary.getEndDate() != null) {
+            stayingDays = (int) java.time.temporal.ChronoUnit.DAYS.between(
+                itinerary.getStartDate(), itinerary.getEndDate()) + 1;
+        }
+        
+        if (itinerary.getDailyStart() != null) {
+            dailyStart = itinerary.getDailyStart().toString();
+        }
+        
+        if (itinerary.getDailyEnd() != null) {
+            dailyEnd = itinerary.getDailyEnd().toString();
+        }
+        
+        return poiRecommendationService.generatePOIRecommendations(
+                itinerary.getDestinationCity(),
+                maxRecommendations,
+                itinerary.getBudgetInCents(),
+                budgetInDollars,
+                travelMode,
+                stayingDays,
+                dailyStart,
+                dailyEnd
+        );
+    }
+    
+    private POIRecommendationResponse generateRecommendationsWithErrorFeedback(
+            ItineraryEntity itinerary, int maxRecommendations, List<String> errorLog) {
+        
+        Double budgetInDollars = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() / 100.0 : null;
+        String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : null;
+        
+        return poiRecommendationService.generatePOIRecommendationsWithErrorFeedback(
+                itinerary.getDestinationCity(),
+                maxRecommendations,
+                itinerary.getBudgetInCents(),
+                budgetInDollars,
+                travelMode,
+                errorLog
+        );
+    }
+    
+    private List<PlaceDTO> convertToDTOs(POIRecommendationResponse response) throws Exception {
+        if (response == null || response.getRecommendations() == null) {
+            return new ArrayList<>();
+        }
+        
+        List<PlaceDTO> places = new ArrayList<>();
+        List<String> validationErrors = new ArrayList<>();
+        
+        for (int i = 0; i < response.getRecommendations().size(); i++) {
+            RecommendedPOI poi = response.getRecommendations().get(i);
+            try {
+                PlaceDTO place = convertToDTO(poi);
+                if (place != null) {
+                    places.add(place);
+                }
+            } catch (Exception e) {
+                validationErrors.add("POI " + (i + 1) + ": " + e.getMessage());
+                logger.warn("Failed to convert POI {} to PlaceDTO: {}", poi.getName(), e.getMessage());
+            }
+        }
+        
+        if (places.isEmpty() && !validationErrors.isEmpty()) {
+            throw new Exception("No valid places could be converted. Errors: " + String.join("; ", validationErrors));
+        }
+        
+        return places;
+    }
+    
+    private PlaceDTO convertToDTO(RecommendedPOI poi) {
+        if (poi == null) {
+            throw new IllegalArgumentException("POI cannot be null");
+        }
+        
+        // Validate required fields
+        if (poi.getName() == null || poi.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("POI name is required");
+        }
+        
+        if (poi.getAddress() == null || poi.getAddress().trim().isEmpty()) {
+            throw new IllegalArgumentException("POI address is required");
+        }
+        
+        if (poi.getDescription() == null || poi.getDescription().trim().isEmpty()) {
+            throw new IllegalArgumentException("POI description is required");
+        }
+        
+        if (poi.getLocation() == null) {
+            throw new IllegalArgumentException("POI location is required");
+        }
+        
+        // Validate coordinates
+        double lat = poi.getLocation().getLat();
+        double lng = poi.getLocation().getLng();
+        
+        if (lat < -90 || lat > 90) {
+            throw new IllegalArgumentException("Invalid latitude: " + lat + " (must be between -90 and 90)");
+        }
+        
+        if (lng < -180 || lng > 180) {
+            throw new IllegalArgumentException("Invalid longitude: " + lng + " (must be between -180 and 180)");
+        }
+        
+        // Create PlaceDTO
+        PlaceDTO place = new PlaceDTO();
+        place.setId(UUID.randomUUID());
+        place.setName(poi.getName().trim());
+        place.setAddress(poi.getAddress().trim());
+        place.setDescription(poi.getDescription().trim());
+        place.setImageUrl(poi.getImageUrl());
+        
+        // Set location
+        GeoPoint location = new GeoPoint();
+        location.setLatitude(lat);
+        location.setLongitude(lng);
+        place.setLocation(location);
+        
+        // Set contact information (optional)
+        if (poi.getContact() != null) {
+            ContactDTO contact = new ContactDTO();
+            contact.setWebsite(poi.getContact().getWebsite());
+            contact.setPhone(poi.getContact().getPhone());
+            place.setContact(contact);
+        }
+        
+        // Set opening hours (optional)
+        if (poi.getOpeningHours() != null && poi.getOpeningHours().getRaw() != null) {
+            OpeningHoursDTO hours = new OpeningHoursDTO();
+            hours.setRaw(poi.getOpeningHours().getRaw());
+            place.setOpeningHours(hours);
+        }
+        
+        return place;
+    }
+}

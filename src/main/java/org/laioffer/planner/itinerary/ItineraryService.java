@@ -1,6 +1,6 @@
 package org.laioffer.planner.itinerary;
 
-import org.laioffer.planner.Recommendations.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.UserEntity;
 
@@ -14,10 +14,10 @@ public interface ItineraryService {
      * 
      * @param request The itinerary creation request containing trip details
      * @param user The authenticated user creating the itinerary
-     * @return The UUID of the created itinerary
+     * @return null
      * @throws IllegalArgumentException if request validation fails
      */
-    UUID createItinerary(CreateItineraryRequest request, UserEntity user);
+    void createItinerary(CreateItineraryRequest request, UserEntity user);
     
     /**
      * Retrieves an itinerary by its ID

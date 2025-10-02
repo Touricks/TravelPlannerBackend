@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -93,7 +94,18 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
     @Modifying
     @Transactional
     @Query("UPDATE ItineraryPlaceEntity ip SET ip.note = :note WHERE ip.itineraryId = :itineraryId AND ip.placeId = :placeId")
-    void updateNote(@Param("itineraryId") UUID itineraryId, 
-                    @Param("placeId") UUID placeId, 
+    void updateNote(@Param("itineraryId") UUID itineraryId,
+                    @Param("placeId") UUID placeId,
                     @Param("note") String note);
+
+    /**
+     * Find ItineraryPlace by ID and verify user ownership in a single query.
+     * Fetch joins ensure itinerary and user are available for downstream checks.
+     */
+    @Query("SELECT ip FROM ItineraryPlaceEntity ip " +
+           "JOIN FETCH ip.itinerary i " +
+           "JOIN FETCH i.user u " +
+           "WHERE ip.id = :itineraryPlaceId AND u.id = :userId")
+    Optional<ItineraryPlaceEntity> findByIdAndUserId(@Param("itineraryPlaceId") UUID itineraryPlaceId,
+                                                     @Param("userId") Long userId);
 }

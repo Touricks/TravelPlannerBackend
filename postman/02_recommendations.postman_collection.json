@@ -1,0 +1,338 @@
+{
+	"info": {
+		"_postman_id": "recommendations-collection-002",
+		"name": "02 - Recommendations",
+		"description": "Get recommendations and stats for itineraries",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Recommendations",
+			"item": [
+				{
+					"name": "Get Recommendations - Basic Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has correct structure\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('itineraryId');",
+									"    pm.expect(responseJson).to.have.property('items');",
+									"    pm.expect(responseJson).to.have.property('page');",
+									"});",
+									"",
+									"pm.test(\"Items array is present and valid\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.items).to.be.an('array');",
+									"});",
+									"",
+									"pm.test(\"Page metadata is valid\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.page).to.have.property('currentPage');",
+									"    pm.expect(responseJson.page).to.have.property('pageSize');",
+									"    pm.expect(responseJson.page).to.have.property('totalElements');",
+									"    pm.expect(responseJson.page).to.have.property('totalPages');",
+									"});",
+									"",
+									"pm.test(\"Place DTOs have required fields\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.items.length > 0) {",
+									"        const place = responseJson.items[0];",
+									"        pm.expect(place).to.have.property('id');",
+									"        pm.expect(place).to.have.property('name');",
+									"        pm.expect(place).to.have.property('address');",
+									"    }",
+									"});",
+									"",
+									"pm.test(\"Response time is less than 2000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/itineraries/{{itineraryId}}/recommendations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "itineraries", "{{itineraryId}}", "recommendations"]
+						}
+					}
+				},
+				{
+					"name": "Get Recommendations - With Query Parameter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response structure is correct\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('itineraryId');",
+									"    pm.expect(responseJson).to.have.property('items');",
+									"    pm.expect(responseJson).to.have.property('page');",
+									"});",
+									"",
+									"pm.test(\"Query parameter affects results\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.items).to.be.an('array');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/itineraries/{{itineraryId}}/recommendations?query=restaurant",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "itineraries", "{{itineraryId}}", "recommendations"],
+							"query": [
+								{
+									"key": "query",
+									"value": "restaurant"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Recommendations - With Pagination",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Pagination parameters are respected\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.page.currentPage).to.eql(1);",
+									"    pm.expect(responseJson.page.pageSize).to.eql(10);",
+									"    pm.expect(responseJson.items.length).to.be.at.most(10);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/itineraries/{{itineraryId}}/recommendations?page=1&size=10",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "itineraries", "{{itineraryId}}", "recommendations"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Recommendations - Invalid Itinerary ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 for invalid UUID\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/itineraries/invalid-uuid/recommendations",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "itineraries", "invalid-uuid", "recommendations"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Get Recommendation Stats",
+			"item": [
+				{
+					"name": "Get Recommendation Stats - Basic Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response has stats structure\", function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"});",
+									"",
+									"pm.test(\"Response time is reasonable\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/itineraries/{{itineraryId}}/recommendations/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "itineraries", "{{itineraryId}}", "recommendations", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Get Recommendation Stats - Invalid Itinerary ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 400 for invalid UUID\", function () {",
+									"    pm.response.to.have.status(400);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/itineraries/not-a-uuid/recommendations/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "v1", "itineraries", "not-a-uuid", "recommendations", "stats"]
+						}
+					}
+				}
+			]
+		}
+	]
+}
