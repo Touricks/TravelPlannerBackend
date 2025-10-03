@@ -1,6 +1,6 @@
 package org.laioffer.planner.itinerary;
 
-import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
+import org.laioffer.planner.model.place.PlaceDTO;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.PlaceEntity;
 import org.laioffer.planner.repository.PlaceRepository;

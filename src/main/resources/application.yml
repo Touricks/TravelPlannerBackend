@@ -63,7 +63,7 @@ langchain4j:
       api-key: ${OPENAI_API_KEY}
       model-name: ${OPENAI_MODEL}
       temperature: 0.7
-      max-tokens: 2000
+      max-tokens: 4000
       timeout: 30s
       max-retries: 3
       log-requests: true

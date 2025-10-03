@@ -2,12 +2,12 @@ package org.laioffer.planner.Recommendation;
 
 import org.laioffer.planner.entity.PlaceEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
-import org.laioffer.planner.Recommendation.model.common.GeoPoint;
-import org.laioffer.planner.Recommendation.model.place.ContactDTO;
-import org.laioffer.planner.Recommendation.model.place.DailyHours;
-import org.laioffer.planner.Recommendation.model.place.OpeningHoursDTO;
-import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
-import org.laioffer.planner.Recommendation.model.place.TimeRange;
+import org.laioffer.planner.model.common.GeoPoint;
+import org.laioffer.planner.model.place.ContactDTO;
+import org.laioffer.planner.model.place.DailyHours;
+import org.laioffer.planner.model.place.OpeningHoursDTO;
+import org.laioffer.planner.model.place.PlaceDTO;
+import org.laioffer.planner.model.place.TimeRange;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;

@@ -1,12 +1,12 @@
 package org.laioffer.planner.itinerary;
 
-import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
-import org.laioffer.planner.Recommendation.model.common.GeoPoint;
-import org.laioffer.planner.Recommendation.model.place.ContactDTO;
-import org.laioffer.planner.Recommendation.model.place.OpeningHoursDTO;
+import org.laioffer.planner.model.place.PlaceDTO;
+import org.laioffer.planner.model.common.GeoPoint;
+import org.laioffer.planner.model.place.ContactDTO;
+import org.laioffer.planner.model.place.OpeningHoursDTO;
 import org.laioffer.planner.entity.ItineraryEntity;
-import org.laioffer.planner.itinerary.model.POIRecommendationResponse;
-import org.laioffer.planner.itinerary.model.RecommendedPOI;
+import org.laioffer.planner.itinerary.model.llm.POIRecommendationResponse;
+import org.laioffer.planner.itinerary.model.llm.LLMRecommendedPOI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -70,25 +70,20 @@ public class LangChain4jLLMService {
     private POIRecommendationResponse generateInitialRecommendations(ItineraryEntity itinerary, int maxRecommendations) {
         Double budgetInDollars = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() / 100.0 : null;
         String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : null;
-        
-        // Calculate staying days and daily schedule if available
+
+        // Calculate staying days if available
         Integer stayingDays = null;
-        String dailyStart = null;
-        String dailyEnd = null;
-        
+
         if (itinerary.getStartDate() != null && itinerary.getEndDate() != null) {
             stayingDays = (int) java.time.temporal.ChronoUnit.DAYS.between(
                 itinerary.getStartDate(), itinerary.getEndDate()) + 1;
         }
-        
-        if (itinerary.getDailyStart() != null) {
-            dailyStart = itinerary.getDailyStart().toString();
-        }
-        
-        if (itinerary.getDailyEnd() != null) {
-            dailyEnd = itinerary.getDailyEnd().toString();
-        }
-        
+
+        // Extract user preferences
+        String travelPace = itinerary.getTravelPace() != null ? itinerary.getTravelPace().toString() : null;
+        String activityIntensity = itinerary.getActivityIntensity() != null ? itinerary.getActivityIntensity().toString() : null;
+        java.util.List<String> preferredCategories = itinerary.getPreferredCategories();
+
         return poiRecommendationService.generatePOIRecommendations(
                 itinerary.getDestinationCity(),
                 maxRecommendations,
@@ -96,8 +91,14 @@ public class LangChain4jLLMService {
                 budgetInDollars,
                 travelMode,
                 stayingDays,
-                dailyStart,
-                dailyEnd
+                travelPace,
+                activityIntensity,
+                itinerary.getNumberOfTravelers(),
+                itinerary.getHasChildren(),
+                itinerary.getHasElderly(),
+                itinerary.getPreferPopularAttractions(),
+                preferredCategories,
+                itinerary.getAdditionalPreferences()
         );
     }
     
@@ -126,7 +127,7 @@ public class LangChain4jLLMService {
         List<String> validationErrors = new ArrayList<>();
         
         for (int i = 0; i < response.getRecommendations().size(); i++) {
-            RecommendedPOI poi = response.getRecommendations().get(i);
+            LLMRecommendedPOI poi = response.getRecommendations().get(i);
             try {
                 PlaceDTO place = convertToDTO(poi);
                 if (place != null) {
@@ -145,7 +146,7 @@ public class LangChain4jLLMService {
         return places;
     }
     
-    private PlaceDTO convertToDTO(RecommendedPOI poi) {
+    private PlaceDTO convertToDTO(LLMRecommendedPOI poi) {
         if (poi == null) {
             throw new IllegalArgumentException("POI cannot be null");
         }
@@ -168,8 +169,8 @@ public class LangChain4jLLMService {
         }
         
         // Validate coordinates
-        double lat = poi.getLocation().getLat();
-        double lng = poi.getLocation().getLng();
+        double lat = poi.getLocation().getLatitude();
+        double lng = poi.getLocation().getLongitude();
         
         if (lat < -90 || lat > 90) {
             throw new IllegalArgumentException("Invalid latitude: " + lat + " (must be between -90 and 90)");

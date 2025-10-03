@@ -2,8 +2,9 @@ package org.laioffer.planner.itinerary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest;
-import org.laioffer.planner.Recommendation.model.itinerary.TravelMode;
+import org.laioffer.planner.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.model.itinerary.TravelMode;
+import org.laioffer.planner.model.common.TravelPace;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.repository.ItineraryRepository;
 import org.mockito.Mockito;
@@ -40,7 +41,7 @@ class ItineraryControllerIntegrationTest {
     private ItineraryRepository itineraryRepository;
 
     @MockBean
-    private LLMService llmService;
+    private LangChain4jLLMService llmService;
 
     @MockBean
     private POIService poiService;
@@ -58,8 +59,7 @@ class ItineraryControllerIntegrationTest {
         request.setEndDate(OffsetDateTime.parse("2024-03-05T18:00:00-08:00"));
         request.setTravelMode(TravelMode.DRIVING);
         request.setBudgetLimitCents(500000);
-        request.setDailyStart("09:00");
-        request.setDailyEnd("21:00");
+        request.setTravelPace(TravelPace.MODERATE);
 
         String requestJson = objectMapper.writeValueAsString(request);
 
@@ -86,12 +86,11 @@ class ItineraryControllerIntegrationTest {
         assertThat(savedItinerary.getEndDate()).isEqualTo(request.getEndDate());
         assertThat(savedItinerary.getTravelMode()).isEqualTo(TravelMode.DRIVING);
         assertThat(savedItinerary.getBudgetInCents()).isEqualTo(500000);
-        assertThat(savedItinerary.getDailyStart().toString()).isEqualTo("09:00");
-        assertThat(savedItinerary.getDailyEnd().toString()).isEqualTo("21:00");
+        assertThat(savedItinerary.getTravelPace()).isEqualTo(TravelPace.MODERATE);
         assertThat(savedItinerary.getCreatedAt()).isNotNull();
         assertThat(savedItinerary.getUpdatedAt()).isNotNull();
         assertThat(savedItinerary.getAiMetadata()).isNotNull();
         assertThat(savedItinerary.getAiMetadata().get("staying_days")).isEqualTo(4);
-        assertThat(savedItinerary.getAiMetadata().get("recommended_poi_count")).isEqualTo(12);
+        assertThat(savedItinerary.getAiMetadata().get("recommended_poi_count")).isEqualTo(15);
     }
 }

@@ -2,10 +2,10 @@ package org.laioffer.planner.itinerary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest;
-import org.laioffer.planner.Recommendation.model.itinerary.TravelMode;
+import org.laioffer.planner.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.model.itinerary.TravelMode;
+import org.laioffer.planner.model.common.TravelPace;
 import org.laioffer.planner.entity.ItineraryEntity;
-import org.laioffer.planner.entity.UserEntity;
 import org.laioffer.planner.repository.ItineraryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -37,8 +37,8 @@ class ItineraryControllerSimpleTest {
     static class TestConfig {
         @Bean
         @Primary
-        public LLMService mockLLMService() {
-            return mock(LLMService.class);
+        public LangChain4jLLMService mockLLMService() {
+            return mock(LangChain4jLLMService.class);
         }
         
         @Bean
@@ -73,8 +73,7 @@ class ItineraryControllerSimpleTest {
         request.setEndDate(OffsetDateTime.parse("2024-03-05T18:00:00-08:00"));
         request.setTravelMode(TravelMode.DRIVING);
         request.setBudgetLimitCents(500000);
-        request.setDailyStart("09:00");
-        request.setDailyEnd("21:00");
+        request.setTravelPace(TravelPace.MODERATE);
 
         // Convert to JSON string (like request body in Postman)
         String requestJson = objectMapper.writeValueAsString(request);
@@ -90,7 +89,7 @@ class ItineraryControllerSimpleTest {
         assertThat(savedItineraries).hasSize(1);
 
         ItineraryEntity savedItinerary = savedItineraries.get(0);
-        
+
         // Verify all the DTO fields were properly mapped to the entity
         assertThat(savedItinerary.getId()).isNotNull();
         assertThat(savedItinerary.getDestinationCity()).isEqualTo("San Francisco");
@@ -98,17 +97,16 @@ class ItineraryControllerSimpleTest {
         assertThat(savedItinerary.getEndDate()).isEqualTo(request.getEndDate());
         assertThat(savedItinerary.getTravelMode()).isEqualTo(TravelMode.DRIVING);
         assertThat(savedItinerary.getBudgetInCents()).isEqualTo(500000);
-        assertThat(savedItinerary.getDailyStart().toString()).isEqualTo("09:00");
-        assertThat(savedItinerary.getDailyEnd().toString()).isEqualTo("21:00");
-        
+        assertThat(savedItinerary.getTravelPace()).isEqualTo(TravelPace.MODERATE);
+
         // Verify timestamps were automatically populated
         assertThat(savedItinerary.getCreatedAt()).isNotNull();
         assertThat(savedItinerary.getUpdatedAt()).isNotNull();
-        
+
         // Verify AI metadata was calculated and stored
         assertThat(savedItinerary.getAiMetadata()).isNotNull();
         assertThat(savedItinerary.getAiMetadata().get("staying_days")).isEqualTo(4);
-        assertThat(savedItinerary.getAiMetadata().get("recommended_poi_count")).isEqualTo(12);
+        assertThat(savedItinerary.getAiMetadata().get("recommended_poi_count")).isEqualTo(15);
         
         System.out.println("✓ Test successfully simulated Postman POST request");
         System.out.println("✓ Request JSON: " + requestJson);

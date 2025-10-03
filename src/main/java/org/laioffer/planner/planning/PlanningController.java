@@ -1,7 +1,7 @@
 package org.laioffer.planner.Planning;
 
-import org.laioffer.planner.Recommendation.model.planning.PlanItineraryRequest;
-import org.laioffer.planner.Recommendation.model.planning.PlanItineraryResponse;
+import org.laioffer.planner.Planning.model.planning.PlanItineraryRequest;
+import org.laioffer.planner.Planning.model.planning.PlanItineraryResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

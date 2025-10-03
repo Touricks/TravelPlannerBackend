@@ -1,7 +1,7 @@
 package org.laioffer.planner.Planning;
 
-import org.laioffer.planner.Recommendation.model.planning.PlanItineraryRequest;
-import org.laioffer.planner.Recommendation.model.planning.PlanItineraryResponse;
+import org.laioffer.planner.Planning.model.planning.PlanItineraryRequest;
+import org.laioffer.planner.Planning.model.planning.PlanItineraryResponse;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
 import org.laioffer.planner.Planning.exception.ItineraryNotFoundException;

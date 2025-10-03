@@ -1,6 +1,6 @@
 package org.laioffer.planner.Interest;
 
-import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
+import org.laioffer.planner.model.place.PlaceDTO;
 
 public class AddInterestResponse {
     private PlaceDTO place;

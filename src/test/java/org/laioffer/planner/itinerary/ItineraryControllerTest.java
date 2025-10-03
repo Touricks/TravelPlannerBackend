@@ -2,8 +2,9 @@ package org.laioffer.planner.itinerary;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest;
-import org.laioffer.planner.Recommendation.model.itinerary.TravelMode;
+import org.laioffer.planner.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.model.itinerary.TravelMode;
+import org.laioffer.planner.model.common.TravelPace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -40,8 +41,7 @@ class ItineraryControllerTest {
         request.setEndDate(OffsetDateTime.parse("2024-03-05T18:00:00-08:00"));
         request.setTravelMode(TravelMode.DRIVING);
         request.setBudgetLimitCents(500000);
-        request.setDailyStart("09:00");
-        request.setDailyEnd("21:00");
+        request.setTravelPace(TravelPace.MODERATE);
 
         String requestJson = objectMapper.writeValueAsString(request);
 

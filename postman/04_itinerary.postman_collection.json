@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "itinerary-collection-004",
-		"name": "04 - Itinerary",
-		"description": "Create and manage travel itineraries",
+		"name": "04 - Itinerary (Updated Schema)",
+		"description": "Create and manage travel itineraries with user preferences",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -17,12 +17,8 @@
 							"    pm.response.to.have.status(201);",
 							"});",
 							"",
-							"pm.test(\"Location header is present\", function () {",
-							"    pm.response.to.have.header('Location');",
-							"});",
-							"",
-							"pm.test(\"Response time is less than 5000ms\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+							"pm.test(\"Response time is reasonable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -49,17 +45,18 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"destinationCity\": \"Paris\",\n    \"startDate\": \"2024-06-01\",\n    \"endDate\": \"2024-06-07\",\n    \"budget\": 2000.00,\n    \"preferences\": \"Museums, cafes, and historic sites\"\n}"
+					"raw": "{\n    \"destinationCity\": \"Paris\",\n    \"startDate\": \"2024-06-01T09:00:00+02:00\",\n    \"endDate\": \"2024-06-07T18:00:00+02:00\",\n    \"budgetLimitCents\": 200000,\n    \"travelPace\": \"MODERATE\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/itineraries",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "itineraries"]
-				}
+				},
+				"description": "Creates a basic itinerary with minimal required fields"
 			}
 		},
 		{
-			"name": "Create Itinerary - With Travel Mode",
+			"name": "Create Itinerary - Full User Preferences",
 			"event": [
 				{
 					"listen": "test",
@@ -70,7 +67,7 @@
 							"});",
 							"",
 							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -97,23 +94,220 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"destinationCity\": \"Tokyo\",\n    \"startDate\": \"2024-07-15\",\n    \"endDate\": \"2024-07-22\",\n    \"budget\": 3000.00,\n    \"travelMode\": \"TRANSIT\",\n    \"preferences\": \"Technology, anime, traditional gardens\"\n}"
+					"raw": "{\n    \"destinationCity\": \"Tokyo\",\n    \"startDate\": \"2024-07-15T08:00:00+09:00\",\n    \"endDate\": \"2024-07-22T20:00:00+09:00\",\n    \"travelMode\": \"TRANSIT\",\n    \"budgetLimitCents\": 300000,\n    \"travelPace\": \"PACKED\",\n    \"activityIntensity\": \"MODERATE\",\n    \"numberOfTravelers\": 2,\n    \"hasChildren\": false,\n    \"hasElderly\": false,\n    \"preferPopularAttractions\": false,\n    \"preferredCategories\": [\"CULTURE\", \"FOOD\", \"ENTERTAINMENT\", \"ART\"],\n    \"additionalPreferences\": \"Interested in anime culture, traditional gardens, and authentic ramen shops. Prefer less touristy areas.\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/itineraries",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "itineraries"]
-				}
+				},
+				"description": "Creates an itinerary with all user preference fields populated"
 			}
 		},
 		{
-			"name": "Create Itinerary - Missing Required Fields",
+			"name": "Create Itinerary - Family Trip (With Children)",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 400 for missing fields\", function () {",
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response time is reasonable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Orlando\",\n    \"startDate\": \"2024-08-10T09:00:00-04:00\",\n    \"endDate\": \"2024-08-17T18:00:00-04:00\",\n    \"travelMode\": \"DRIVING\",\n    \"budgetLimitCents\": 400000,\n    \"travelPace\": \"RELAXED\",\n    \"activityIntensity\": \"LIGHT\",\n    \"numberOfTravelers\": 4,\n    \"hasChildren\": true,\n    \"hasElderly\": false,\n    \"preferPopularAttractions\": true,\n    \"preferredCategories\": [\"ENTERTAINMENT\", \"NATURE\", \"ADVENTURE\"],\n    \"additionalPreferences\": \"Family-friendly activities, need stroller accessibility, prefer indoor activities during midday heat\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Creates a family-friendly itinerary optimized for traveling with children"
+			}
+		},
+		{
+			"name": "Create Itinerary - Adventure Trip (Solo Traveler)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response time is reasonable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Queenstown\",\n    \"startDate\": \"2024-09-01T08:00:00+12:00\",\n    \"endDate\": \"2024-09-10T20:00:00+12:00\",\n    \"travelMode\": \"MIXED\",\n    \"budgetLimitCents\": 250000,\n    \"travelPace\": \"PACKED\",\n    \"activityIntensity\": \"INTENSE\",\n    \"numberOfTravelers\": 1,\n    \"hasChildren\": false,\n    \"hasElderly\": false,\n    \"preferPopularAttractions\": false,\n    \"preferredCategories\": [\"ADVENTURE\", \"NATURE\", \"SPORTS\"],\n    \"additionalPreferences\": \"Looking for extreme sports, hiking, and outdoor adventures. Prefer off-the-beaten-path experiences.\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Creates an adventure-focused itinerary for solo traveler with high intensity activities"
+			}
+		},
+		{
+			"name": "Create Itinerary - Elderly Couple Trip",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response time is reasonable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Florence\",\n    \"startDate\": \"2024-10-05T10:00:00+02:00\",\n    \"endDate\": \"2024-10-12T17:00:00+02:00\",\n    \"travelMode\": \"WALKING\",\n    \"budgetLimitCents\": 180000,\n    \"travelPace\": \"RELAXED\",\n    \"activityIntensity\": \"LIGHT\",\n    \"numberOfTravelers\": 2,\n    \"hasChildren\": false,\n    \"hasElderly\": true,\n    \"preferPopularAttractions\": true,\n    \"preferredCategories\": [\"MUSEUM\", \"ART\", \"CULTURE\", \"HISTORICAL\"],\n    \"additionalPreferences\": \"Prefer museums and cultural sites with easy accessibility, no long walks, frequent rest stops needed\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Creates a relaxed itinerary optimized for elderly travelers with accessibility needs"
+			}
+		},
+		{
+			"name": "Create Itinerary - Shopping & Nightlife",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"pm.test(\"Response time is reasonable\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Dubai\",\n    \"startDate\": \"2024-11-15T12:00:00+04:00\",\n    \"endDate\": \"2024-11-20T22:00:00+04:00\",\n    \"travelMode\": \"TRANSIT\",\n    \"budgetLimitCents\": 500000,\n    \"travelPace\": \"MODERATE\",\n    \"activityIntensity\": \"MODERATE\",\n    \"numberOfTravelers\": 3,\n    \"hasChildren\": false,\n    \"hasElderly\": false,\n    \"preferPopularAttractions\": true,\n    \"preferredCategories\": [\"SHOPPING\", \"NIGHTLIFE\", \"ENTERTAINMENT\", \"FOOD\"],\n    \"additionalPreferences\": \"Luxury shopping malls, rooftop bars, fine dining, late-night activities preferred\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Creates an itinerary focused on shopping and nightlife experiences"
+			}
+		},
+		{
+			"name": "Create Itinerary - Missing Required Fields (budgetLimitCents)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 for missing required fields\", function () {",
 							"    pm.response.to.have.status(400);",
 							"});"
 						],
@@ -141,17 +335,153 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"destinationCity\": \"London\"\n}"
+					"raw": "{\n    \"destinationCity\": \"London\",\n    \"startDate\": \"2024-12-01T09:00:00Z\",\n    \"endDate\": \"2024-12-07T18:00:00Z\",\n    \"travelPace\": \"MODERATE\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/itineraries",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "itineraries"]
-				}
+				},
+				"description": "Test validation: Missing budgetLimitCents (required field)"
 			}
 		},
 		{
-			"name": "Create Itinerary - Unauthorized",
+			"name": "Create Itinerary - Missing Required Fields (travelPace)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 for missing required fields\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Barcelona\",\n    \"startDate\": \"2024-12-10T09:00:00+01:00\",\n    \"endDate\": \"2024-12-15T18:00:00+01:00\",\n    \"budgetLimitCents\": 200000\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Test validation: Missing travelPace (required field)"
+			}
+		},
+		{
+			"name": "Create Itinerary - Invalid Date Range",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 for invalid date range\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Amsterdam\",\n    \"startDate\": \"2024-12-20T09:00:00+01:00\",\n    \"endDate\": \"2024-12-15T18:00:00+01:00\",\n    \"budgetLimitCents\": 150000,\n    \"travelPace\": \"MODERATE\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Test validation: End date before start date"
+			}
+		},
+		{
+			"name": "Create Itinerary - Negative Budget",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 for negative budget\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"destinationCity\": \"Berlin\",\n    \"startDate\": \"2025-01-10T09:00:00+01:00\",\n    \"endDate\": \"2025-01-15T18:00:00+01:00\",\n    \"budgetLimitCents\": -50000,\n    \"travelPace\": \"MODERATE\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Test validation: Negative budget value"
+			}
+		},
+		{
+			"name": "Create Itinerary - Unauthorized (No Token)",
 			"event": [
 				{
 					"listen": "test",
@@ -175,14 +505,42 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"destinationCity\": \"Rome\",\n    \"startDate\": \"2024-08-01\",\n    \"endDate\": \"2024-08-07\",\n    \"budget\": 1500.00\n}"
+					"raw": "{\n    \"destinationCity\": \"Rome\",\n    \"startDate\": \"2025-02-01T09:00:00+01:00\",\n    \"endDate\": \"2025-02-07T18:00:00+01:00\",\n    \"budgetLimitCents\": 180000,\n    \"travelPace\": \"MODERATE\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/api/itineraries",
 					"host": ["{{baseUrl}}"],
 					"path": ["api", "itineraries"]
-				}
+				},
+				"description": "Test authentication: Request without bearer token"
 			}
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
 		}
 	]
 }

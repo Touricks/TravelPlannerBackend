@@ -1,9 +1,9 @@
 package org.laioffer.planner.Recommendation;
 
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
-import org.laioffer.planner.Recommendation.model.common.PageMeta;
-import org.laioffer.planner.Recommendation.model.itinerary.GetRecommendationsResponse;
-import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
+import org.laioffer.planner.model.common.PageMeta;
+import org.laioffer.planner.model.itinerary.GetRecommendationsResponse;
+import org.laioffer.planner.model.place.PlaceDTO;
 import org.laioffer.planner.repository.ItineraryPlaceRepository;
 import org.laioffer.planner.repository.PlaceRepository;
 import org.springframework.beans.factory.annotation.Autowired;

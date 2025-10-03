@@ -4,7 +4,7 @@ import dev.langchain4j.service.spring.AiService;
 import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.V;
-import org.laioffer.planner.itinerary.model.POIRecommendationResponse;
+import org.laioffer.planner.itinerary.model.llm.POIRecommendationResponse;
 
 @AiService(chatModel = "openAiChatModel")
 public interface POIRecommendationService {
@@ -33,21 +33,35 @@ public interface POIRecommendationService {
         """)
     @UserMessage("""
         Generate {{maxRecommendations}} popular tourist attractions and points of interest for {{destinationCity}}.
-        
+
         Trip Details:
         - Destination: {{destinationCity}}
         - Number of recommendations needed: {{maxRecommendations}}
         {{#budgetInCents}}- Budget consideration: ${{budgetInDollars}}{{/budgetInCents}}
         {{#travelMode}}- Travel mode: {{travelMode}}{{/travelMode}}
         {{#stayingDays}}- Trip duration: {{stayingDays}} days{{/stayingDays}}
-        {{#dailyStart}}{{#dailyEnd}}- Daily schedule: {{dailyStart}} to {{dailyEnd}}{{/dailyEnd}}{{/dailyStart}}
-        
+
+        Traveler Profile:
+        {{#travelPace}}- Travel pace: {{travelPace}} (adjust POI density accordingly){{/travelPace}}
+        {{#activityIntensity}}- Activity intensity preference: {{activityIntensity}}{{/activityIntensity}}
+        {{#numberOfTravelers}}- Group size: {{numberOfTravelers}} travelers{{/numberOfTravelers}}
+        {{#hasChildren}}- Traveling with children: yes (prioritize family-friendly attractions){{/hasChildren}}
+        {{#hasElderly}}- Traveling with elderly: yes (prioritize accessible, low-intensity activities){{/hasElderly}}
+        {{#preferPopularAttractions}}- Preference: Well-known, popular tourist attractions{{/preferPopularAttractions}}
+        {{^preferPopularAttractions}}- Preference: Off-the-beaten-path, unique experiences{{/preferPopularAttractions}}
+        {{#preferredCategories}}
+        - Preferred attraction types: {{#.}}{{.}}, {{/.}}
+        {{/preferredCategories}}
+        {{#additionalPreferences}}
+        - Additional preferences: {{additionalPreferences}}
+        {{/additionalPreferences}}
+
         Focus on attractions that are:
-        - Suitable for the specified travel mode and schedule
-        - Appropriate for the budget level
-        - Popular and well-reviewed by tourists
+        - Suitable for the specified travel mode, pace, and activity level
+        - Appropriate for the budget level and group composition
+        - Matching the preferred categories when specified
         - Accessible and open to visitors
-        
+
         Ensure each recommendation includes:
         - Accurate name and full street address
         - Precise latitude/longitude coordinates
@@ -62,8 +76,14 @@ public interface POIRecommendationService {
             @V("budgetInDollars") Double budgetInDollars,
             @V("travelMode") String travelMode,
             @V("stayingDays") Integer stayingDays,
-            @V("dailyStart") String dailyStart,
-            @V("dailyEnd") String dailyEnd
+            @V("travelPace") String travelPace,
+            @V("activityIntensity") String activityIntensity,
+            @V("numberOfTravelers") Integer numberOfTravelers,
+            @V("hasChildren") Boolean hasChildren,
+            @V("hasElderly") Boolean hasElderly,
+            @V("preferPopularAttractions") Boolean preferPopularAttractions,
+            @V("preferredCategories") java.util.List<String> preferredCategories,
+            @V("additionalPreferences") String additionalPreferences
     );
     
     @SystemMessage("""

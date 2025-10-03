@@ -1,7 +1,7 @@
 package org.laioffer.planner.Interest;
 
 import org.laioffer.planner.Recommendation.PlaceMapper;
-import org.laioffer.planner.Recommendation.model.place.PlaceDTO;
+import org.laioffer.planner.model.place.PlaceDTO;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
 import org.laioffer.planner.entity.UserEntity;

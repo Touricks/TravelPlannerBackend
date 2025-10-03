@@ -1,6 +1,6 @@
 package org.laioffer.planner.itinerary;
 
-import org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest;
+import org.laioffer.planner.model.itinerary.CreateItineraryRequest;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.UserEntity;
 

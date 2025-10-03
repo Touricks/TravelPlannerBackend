@@ -226,6 +226,27 @@ components:
       type: string
       enum: [DRIVING, TRANSIT, WALKING, BICYCLING]
 
+    TravelPace:
+      type: string
+      enum: [RELAXED, MODERATE, PACKED]
+      description: |
+        Travel pace preference:
+        - RELAXED: 2-3 POI/day
+        - MODERATE: 4-5 POI/day
+        - PACKED: 6+ POI/day
+
+    ActivityIntensity:
+      type: string
+      enum: [LIGHT, MODERATE, INTENSE]
+      description: |
+        Physical activity intensity:
+        - LIGHT: minimal walking
+        - MODERATE: standard walking/touring
+        - INTENSE: hiking/sports
+
+    AttractionCategory:
+      type: string
+      enum: [MUSEUM, NATURE, FOOD, CULTURE, SHOPPING, ADVENTURE, NIGHTLIFE, HISTORICAL, ENTERTAINMENT, SPORTS, ART]
 
     OpeningHoursDTO:
       type: object
@@ -290,7 +311,10 @@ components:
     CreateItineraryRequest:
       type: object
       properties:
-        destinationCity: { type: string }
+        destinationCity:
+          type: string
+          description: Destination city for the trip
+          example: "Tokyo"
         startDate:
           type: string
           format: date-time
@@ -301,17 +325,45 @@ components:
           format: date-time
           description: ISO 8601 datetime with timezone offset
           example: "2025-10-05T20:00:00+08:00"
-        travelMode: { $ref: '#/components/schemas/TravelMode' }
-        budgetLimitCents: { type: integer, format: int32, nullable: true }
-        dailyStart:
+        travelMode:
+          $ref: '#/components/schemas/TravelMode'
+        budgetLimitCents:
+          type: integer
+          format: int32
+          description: Budget limit in cents (USD)
+          example: 300000
+        travelPace:
+          $ref: '#/components/schemas/TravelPace'
+        activityIntensity:
+          $ref: '#/components/schemas/ActivityIntensity'
+        preferredCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttractionCategory'
+          description: Preferred attraction categories
+          example: ["CULTURE", "FOOD", "ENTERTAINMENT", "ART"]
+        numberOfTravelers:
+          type: integer
+          format: int32
+          description: Total number of travelers
+          example: 2
+        hasChildren:
+          type: boolean
+          description: Whether the group includes children
+          example: false
+        hasElderly:
+          type: boolean
+          description: Whether the group includes elderly travelers
+          example: false
+        preferPopularAttractions:
+          type: boolean
+          description: Whether to prefer popular/touristy attractions
+          example: false
+        additionalPreferences:
           type: string
-          description: Local time, HH:mm
-          example: "09:00"
-        dailyEnd:
-          type: string
-          description: Local time, HH:mm
-          example: "20:00"
-      required: [destinationCity, startDate, endDate]
+          description: Free-text additional preferences or constraints
+          example: "Interested in anime culture and traditional tea ceremonies"
+      required: [destinationCity, startDate, endDate, budgetLimitCents, travelPace]
     CreateItineraryResponse:
       allOf:
         - $ref: '#/components/schemas/CreateItineraryRequest'

@@ -1,7 +1,7 @@
 package org.laioffer.planner.Interest;
 
-import org.laioffer.planner.Recommendation.model.common.ApiError;
-import org.laioffer.planner.Recommendation.model.common.ErrorResponse;
+import org.laioffer.planner.model.common.ApiError;
+import org.laioffer.planner.model.common.ErrorResponse;
 import org.laioffer.planner.entity.UserEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
