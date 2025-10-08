@@ -37,29 +37,23 @@ public interface POIRecommendationService {
         Trip Details:
         - Destination: {{destinationCity}}
         - Number of recommendations needed: {{maxRecommendations}}
-        {{#budgetInCents}}- Budget consideration: ${{budgetInDollars}}{{/budgetInCents}}
-        {{#travelMode}}- Travel mode: {{travelMode}}{{/travelMode}}
-        {{#stayingDays}}- Trip duration: {{stayingDays}} days{{/stayingDays}}
+        - Budget consideration: ${{budgetInDollars}}
+        - Travel mode: {{travelMode}}
+        - Trip duration: {{stayingDays}} days
 
         Traveler Profile:
-        {{#travelPace}}- Travel pace: {{travelPace}} (adjust POI density accordingly){{/travelPace}}
-        {{#activityIntensity}}- Activity intensity preference: {{activityIntensity}}{{/activityIntensity}}
-        {{#numberOfTravelers}}- Group size: {{numberOfTravelers}} travelers{{/numberOfTravelers}}
+        - Travel pace: {{travelPace}} (adjust POI density accordingly)
+        - Activity intensity preference: {{activityIntensity}}
+        - Group size: {{numberOfTravelers}} travelers
+        - Prefer popular attractions: {{preferPopularAttractions}}
         {{#hasChildren}}- Traveling with children: yes (prioritize family-friendly attractions){{/hasChildren}}
         {{#hasElderly}}- Traveling with elderly: yes (prioritize accessible, low-intensity activities){{/hasElderly}}
-        {{#preferPopularAttractions}}- Preference: Well-known, popular tourist attractions{{/preferPopularAttractions}}
-        {{^preferPopularAttractions}}- Preference: Off-the-beaten-path, unique experiences{{/preferPopularAttractions}}
-        {{#preferredCategories}}
-        - Preferred attraction types: {{#.}}{{.}}, {{/.}}
-        {{/preferredCategories}}
-        {{#additionalPreferences}}
-        - Additional preferences: {{additionalPreferences}}
-        {{/additionalPreferences}}
+        {{#preferredCategories}}- Preferred category: {{.}}
+        {{/preferredCategories}}{{#additionalPreferences}}- Additional preferences: {{additionalPreferences}}{{/additionalPreferences}}
 
         Focus on attractions that are:
         - Suitable for the specified travel mode, pace, and activity level
         - Appropriate for the budget level and group composition
-        - Matching the preferred categories when specified
         - Accessible and open to visitors
 
         Ensure each recommendation includes:
@@ -79,9 +73,9 @@ public interface POIRecommendationService {
             @V("travelPace") String travelPace,
             @V("activityIntensity") String activityIntensity,
             @V("numberOfTravelers") Integer numberOfTravelers,
-            @V("hasChildren") Boolean hasChildren,
-            @V("hasElderly") Boolean hasElderly,
-            @V("preferPopularAttractions") Boolean preferPopularAttractions,
+            @V("hasChildren") boolean hasChildren,
+            @V("hasElderly") boolean hasElderly,
+            @V("preferPopularAttractions") boolean preferPopularAttractions,
             @V("preferredCategories") java.util.List<String> preferredCategories,
             @V("additionalPreferences") String additionalPreferences
     );
@@ -101,23 +95,18 @@ public interface POIRecommendationService {
         """)
     @UserMessage("""
         Generate {{maxRecommendations}} popular tourist attractions for {{destinationCity}}.
-        
-        PREVIOUS ERRORS TO FIX:
-        {{#errorHistory}}
-        - {{.}}
-        {{/errorHistory}}
-        
+
         Trip Details:
         - Destination: {{destinationCity}}
         - Number of recommendations: {{maxRecommendations}}
-        {{#budgetInCents}}- Budget: ${{budgetInDollars}}{{/budgetInCents}}
-        {{#travelMode}}- Travel mode: {{travelMode}}{{/travelMode}}
-        
-        CRITICAL: Fix the errors mentioned above and ensure:
-        - All required fields are present and non-empty
-        - Coordinates are valid (lat: -90 to 90, lng: -180 to 180)
-        - Proper data types are used
-        - Complete address information is provided
+        - Budget: ${{budgetInDollars}}
+        - Travel mode: {{travelMode}}
+
+        CRITICAL: Ensure all recommendations have:
+        - All required fields present and non-empty
+        - Coordinates valid (lat: -90 to 90, lng: -180 to 180)
+        - Proper data types
+        - Complete address information
         """)
     POIRecommendationResponse generatePOIRecommendationsWithErrorFeedback(
             @V("destinationCity") String destinationCity,

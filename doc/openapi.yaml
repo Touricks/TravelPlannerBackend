@@ -15,8 +15,30 @@ security:
 
 paths:
   /itineraries:
+    get:
+      summary: Get all itineraries for the current user
+      operationId: getUserItineraries
+      tags: [Itineraries]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: List of user's itineraries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItinerariesListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
     post:
-      summary: Create a new itinerary
+      summary: Create a new itinerary (async)
+      description: |
+        Creates a new itinerary and triggers asynchronous AI-powered POI generation.
+        Returns immediately with itinerary ID. Poll GET /itineraries/{id} to check
+        generation status via aiMetadata.generation_pending field.
       operationId: createItinerary
       tags: [Itineraries]
       requestBody:
@@ -26,8 +48,36 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateItineraryRequest'
       responses:
-        '201':
-          description: Created
+        '202':
+          description: |
+            Accepted - Itinerary created, AI generation started in background.
+            Check aiMetadata.generation_pending to track progress.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateItineraryResponse'
+
+  /itineraries/{itineraryId}:
+    get:
+      summary: Get itinerary details by ID
+      description: |
+        Retrieves complete itinerary details including places and AI generation status.
+        Check aiMetadata.generation_pending to see if POI generation is complete.
+      operationId: getItineraryById
+      tags: [Itineraries]
+      parameters:
+        - $ref: '#/components/parameters/ItineraryId'
+      responses:
+        '200':
+          description: Itinerary details with places and generation status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItineraryDetailResponse'
+        '403':
+          description: Forbidden - User does not own this itinerary
+        '404':
+          description: Itinerary not found
 
   /itineraries/{itineraryId}/recommendations:
     get:
@@ -365,16 +415,92 @@ components:
           example: "Interested in anime culture and traditional tea ceremonies"
       required: [destinationCity, startDate, endDate, budgetLimitCents, travelPace]
     CreateItineraryResponse:
-      allOf:
-        - $ref: '#/components/schemas/CreateItineraryRequest'
-        - type: object
-          properties:
-            itineraryId: { type: string, format: uuid }
-            seededRecommendations:
-              type: array
-              items:
-                $ref: '#/components/schemas/PlaceDTO'
-          required: [itineraryId]
+      type: object
+      properties:
+        itineraryId:
+          type: string
+          format: uuid
+          description: Unique identifier for the created itinerary
+        destinationCity:
+          type: string
+          example: "Paris"
+        startDate:
+          type: string
+          format: date-time
+          example: "2024-06-01T09:00:00+02:00"
+        endDate:
+          type: string
+          format: date-time
+          example: "2024-06-07T18:00:00+02:00"
+        travelMode:
+          $ref: '#/components/schemas/TravelMode'
+        budgetLimitCents:
+          type: integer
+          example: 200000
+      required: [itineraryId, destinationCity, startDate, endDate, budgetLimitCents]
+
+    ItineraryDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        destinationCity:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        travelMode:
+          $ref: '#/components/schemas/TravelMode'
+        budgetLimitCents:
+          type: integer
+        travelPace:
+          $ref: '#/components/schemas/TravelPace'
+        activityIntensity:
+          $ref: '#/components/schemas/ActivityIntensity'
+        numberOfTravelers:
+          type: integer
+        hasChildren:
+          type: boolean
+        hasElderly:
+          type: boolean
+        preferPopularAttractions:
+          type: boolean
+        preferredCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttractionCategory'
+        additionalPreferences:
+          type: string
+        places:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceDTO'
+        seededRecommendations:
+          type: object
+          additionalProperties: true
+        aiMetadata:
+          type: object
+          description: |
+            AI generation metadata including status.
+            - generation_pending (boolean): true if POI generation in progress
+            - generated_places_count (integer): number of places generated
+            - generation_error (string): error message if generation failed
+          additionalProperties: true
+          example:
+            generation_pending: false
+            generated_places_count: 15
+            staying_days: 6
+            recommended_poi_count: 15
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     # 2) Get Recommended Places
     RecommendationsResponse:
@@ -465,6 +591,17 @@ components:
       required: [order, place, arrivalLocal, departLocal, stayMinutes]
 
     # Summaries
+    ItinerariesListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItinerarySummaryDTO'
+        page:
+          $ref: '#/components/schemas/PageMeta'
+      required: [items, page]
+
     ItinerarySummaryDTO:
       type: object
       properties:

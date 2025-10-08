@@ -1,6 +1,8 @@
 package org.laioffer.planner.repository;
 
 import org.laioffer.planner.entity.ItineraryEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +18,9 @@ public interface ItineraryRepository extends JpaRepository<ItineraryEntity, UUID
 
     // 基本查询 - 查询用户的行程
     List<ItineraryEntity> findByUserId(Long userId);
+
+    // 分页查询用户的行程
+    Page<ItineraryEntity> findByUserId(Long userId, Pageable pageable);
 
     // 按城市查询
     List<ItineraryEntity> findByDestinationCity(String destinationCity);

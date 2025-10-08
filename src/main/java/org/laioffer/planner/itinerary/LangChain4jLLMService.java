@@ -68,50 +68,70 @@ public class LangChain4jLLMService {
     }
     
     private POIRecommendationResponse generateInitialRecommendations(ItineraryEntity itinerary, int maxRecommendations) {
-        Double budgetInDollars = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() / 100.0 : null;
-        String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : null;
+        // Provide non-null default values for ALL fields to avoid LangChain4j template errors
+        // Mustache templates require all variables to exist, even in conditional blocks
 
-        // Calculate staying days if available
-        Integer stayingDays = null;
+        Integer budgetInCents = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() : 0;
+        Double budgetInDollars = budgetInCents / 100.0;
+        String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : "WALKING";
 
+        // Calculate staying days
+        Integer stayingDays = 1;
         if (itinerary.getStartDate() != null && itinerary.getEndDate() != null) {
-            stayingDays = (int) java.time.temporal.ChronoUnit.DAYS.between(
-                itinerary.getStartDate(), itinerary.getEndDate()) + 1;
+            long daysBetween = java.time.temporal.ChronoUnit.DAYS.between(
+                itinerary.getStartDate().toLocalDate(),
+                itinerary.getEndDate().toLocalDate()
+            );
+            stayingDays = (int) daysBetween;
+            if (stayingDays == 0) {
+                stayingDays = 1;
+            }
         }
 
-        // Extract user preferences
-        String travelPace = itinerary.getTravelPace() != null ? itinerary.getTravelPace().toString() : null;
-        String activityIntensity = itinerary.getActivityIntensity() != null ? itinerary.getActivityIntensity().toString() : null;
+        // Extract user preferences with non-null defaults
+        String travelPace = itinerary.getTravelPace() != null ? itinerary.getTravelPace().toString() : "MODERATE";
+        String activityIntensity = itinerary.getActivityIntensity() != null ? itinerary.getActivityIntensity().toString() : "MODERATE";
+        Integer numberOfTravelers = itinerary.getNumberOfTravelers() != null ? itinerary.getNumberOfTravelers() : 1;
+        Boolean hasChildren = itinerary.getHasChildren() != null ? itinerary.getHasChildren() : false;
+        Boolean hasElderly = itinerary.getHasElderly() != null ? itinerary.getHasElderly() : false;
+        Boolean preferPopularAttractions = itinerary.getPreferPopularAttractions() != null ? itinerary.getPreferPopularAttractions() : true;
+        // Fetch from entity (now eagerly loaded)
         java.util.List<String> preferredCategories = itinerary.getPreferredCategories();
+        if (preferredCategories == null) {
+            preferredCategories = new ArrayList<>();  // Ensure non-null for template
+        }
+        String additionalPreferences = itinerary.getAdditionalPreferences() != null ? itinerary.getAdditionalPreferences() : "";
 
         return poiRecommendationService.generatePOIRecommendations(
                 itinerary.getDestinationCity(),
                 maxRecommendations,
-                itinerary.getBudgetInCents(),
+                budgetInCents,  // Pass non-null value
                 budgetInDollars,
                 travelMode,
                 stayingDays,
                 travelPace,
                 activityIntensity,
-                itinerary.getNumberOfTravelers(),
-                itinerary.getHasChildren(),
-                itinerary.getHasElderly(),
-                itinerary.getPreferPopularAttractions(),
+                numberOfTravelers,
+                hasChildren,
+                hasElderly,
+                preferPopularAttractions,
                 preferredCategories,
-                itinerary.getAdditionalPreferences()
+                additionalPreferences
         );
     }
     
     private POIRecommendationResponse generateRecommendationsWithErrorFeedback(
             ItineraryEntity itinerary, int maxRecommendations, List<String> errorLog) {
-        
-        Double budgetInDollars = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() / 100.0 : null;
-        String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : null;
-        
+
+        // Provide default values for null fields to avoid LangChain4j template errors
+        Integer budgetInCents = itinerary.getBudgetInCents() != null ? itinerary.getBudgetInCents() : 0;
+        Double budgetInDollars = budgetInCents / 100.0;
+        String travelMode = itinerary.getTravelMode() != null ? itinerary.getTravelMode().toString() : "WALKING";
+
         return poiRecommendationService.generatePOIRecommendationsWithErrorFeedback(
                 itinerary.getDestinationCity(),
                 maxRecommendations,
-                itinerary.getBudgetInCents(),
+                budgetInCents,
                 budgetInDollars,
                 travelMode,
                 errorLog

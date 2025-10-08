@@ -1,8 +1,8 @@
 {
 	"info": {
 		"_postman_id": "itinerary-collection-004",
-		"name": "04 - Itinerary (Updated Schema)",
-		"description": "Create and manage travel itineraries with user preferences",
+		"name": "02 - Itinerary (Full CRUD)",
+		"description": "Create, retrieve, and manage travel itineraries with user preferences. Includes GET endpoints for listing and viewing itinerary details.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -13,12 +13,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 202 (Accepted)\", function () {",
+							"    pm.response.to.have.status(202);",
 							"});",
 							"",
-							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"pm.test(\"Response contains itineraryId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('itineraryId');",
+							"    pm.environment.set('itineraryId', jsonData.itineraryId);",
+							"});",
+							"",
+							"pm.test(\"Response time is fast (async processing)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -62,12 +68,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 202 (Accepted)\", function () {",
+							"    pm.response.to.have.status(202);",
 							"});",
 							"",
-							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"pm.test(\"Response contains itineraryId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('itineraryId');",
+							"    pm.environment.set('itineraryId', jsonData.itineraryId);",
+							"});",
+							"",
+							"pm.test(\"Response time is fast (async processing)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -111,12 +123,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 202 (Accepted)\", function () {",
+							"    pm.response.to.have.status(202);",
 							"});",
 							"",
-							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"pm.test(\"Response contains itineraryId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('itineraryId');",
+							"    pm.environment.set('itineraryId', jsonData.itineraryId);",
+							"});",
+							"",
+							"pm.test(\"Response time is fast (async processing)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -160,12 +178,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 202 (Accepted)\", function () {",
+							"    pm.response.to.have.status(202);",
 							"});",
 							"",
-							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"pm.test(\"Response contains itineraryId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('itineraryId');",
+							"    pm.environment.set('itineraryId', jsonData.itineraryId);",
+							"});",
+							"",
+							"pm.test(\"Response time is fast (async processing)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -209,12 +233,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 202 (Accepted)\", function () {",
+							"    pm.response.to.have.status(202);",
 							"});",
 							"",
-							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"pm.test(\"Response contains itineraryId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('itineraryId');",
+							"    pm.environment.set('itineraryId', jsonData.itineraryId);",
+							"});",
+							"",
+							"pm.test(\"Response time is fast (async processing)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -258,12 +288,18 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Status code is 202 (Accepted)\", function () {",
+							"    pm.response.to.have.status(202);",
 							"});",
 							"",
-							"pm.test(\"Response time is reasonable\", function () {",
-							"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+							"pm.test(\"Response contains itineraryId\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('itineraryId');",
+							"    pm.environment.set('itineraryId', jsonData.itineraryId);",
+							"});",
+							"",
+							"pm.test(\"Response time is fast (async processing)\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(5000);",
 							"});"
 						],
 						"type": "text/javascript"
@@ -514,6 +550,294 @@
 				},
 				"description": "Test authentication: Request without bearer token"
 			}
+		},
+		{
+			"name": "Get All Itineraries - Default Pagination",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('items');",
+							"    pm.expect(jsonData).to.have.property('page');",
+							"    pm.expect(jsonData.items).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Page metadata is correct\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.page).to.have.property('page');",
+							"    pm.expect(jsonData.page).to.have.property('size');",
+							"    pm.expect(jsonData.page).to.have.property('totalElements');",
+							"    pm.expect(jsonData.page).to.have.property('totalPages');",
+							"    pm.expect(jsonData.page.page).to.equal(0);",
+							"    pm.expect(jsonData.page.size).to.equal(20);",
+							"});",
+							"",
+							"pm.test(\"Itinerary summaries have required fields\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    if (jsonData.items.length > 0) {",
+							"        var itinerary = jsonData.items[0];",
+							"        pm.expect(itinerary).to.have.property('id');",
+							"        pm.expect(itinerary).to.have.property('destinationCity');",
+							"        pm.expect(itinerary).to.have.property('startDate');",
+							"        pm.expect(itinerary).to.have.property('endDate');",
+							"        pm.expect(itinerary).to.have.property('budgetLimitCents');",
+							"        pm.expect(itinerary).to.have.property('travelPace');",
+							"        pm.expect(itinerary).to.have.property('createdAt');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Retrieves all itineraries for the authenticated user with default pagination (page=0, size=20)"
+			}
+		},
+		{
+			"name": "Get All Itineraries - Custom Pagination",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Custom pagination is applied\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.page.page).to.equal(0);",
+							"    pm.expect(jsonData.page.size).to.equal(5);",
+							"});",
+							"",
+							"pm.test(\"Items count does not exceed page size\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.items.length).to.be.at.most(5);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries?page=0&size=5",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"],
+					"query": [
+						{
+							"key": "page",
+							"value": "0"
+						},
+						{
+							"key": "size",
+							"value": "5"
+						}
+					]
+				},
+				"description": "Retrieves itineraries with custom pagination parameters"
+			}
+		},
+		{
+			"name": "Get All Itineraries - Unauthorized (No Token)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 for unauthorized\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries"]
+				},
+				"description": "Test authentication: List request without bearer token"
+			}
+		},
+		{
+			"name": "Get Itinerary By ID - Success",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has all itinerary details\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('id');",
+							"    pm.expect(jsonData).to.have.property('destinationCity');",
+							"    pm.expect(jsonData).to.have.property('startDate');",
+							"    pm.expect(jsonData).to.have.property('endDate');",
+							"    pm.expect(jsonData).to.have.property('travelMode');",
+							"    pm.expect(jsonData).to.have.property('budgetLimitCents');",
+							"    pm.expect(jsonData).to.have.property('travelPace');",
+							"    pm.expect(jsonData).to.have.property('createdAt');",
+							"    pm.expect(jsonData).to.have.property('updatedAt');",
+							"});",
+							"",
+							"pm.test(\"Response includes user preferences\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('activityIntensity');",
+							"    pm.expect(jsonData).to.have.property('numberOfTravelers');",
+							"    pm.expect(jsonData).to.have.property('hasChildren');",
+							"    pm.expect(jsonData).to.have.property('hasElderly');",
+							"    pm.expect(jsonData).to.have.property('preferPopularAttractions');",
+							"});",
+							"",
+							"pm.test(\"Response includes places array\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('places');",
+							"    pm.expect(jsonData.places).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Response includes AI metadata for generation status\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData).to.have.property('aiMetadata');",
+							"    pm.expect(jsonData.aiMetadata).to.have.property('generation_pending');",
+							"    ",
+							"    // Log generation status for debugging",
+							"    console.log('Generation pending:', jsonData.aiMetadata.generation_pending);",
+							"    if (!jsonData.aiMetadata.generation_pending) {",
+							"        console.log('Generated places count:', jsonData.aiMetadata.generated_places_count);",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}"]
+				},
+				"description": "Retrieves detailed information for a specific itinerary. NOTE: Set {{itineraryId}} variable to a valid UUID from your database before running this test."
+			}
+		},
+		{
+			"name": "Get Itinerary By ID - Not Found",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 for non-existent itinerary\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/00000000-0000-0000-0000-000000000000",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "00000000-0000-0000-0000-000000000000"]
+				},
+				"description": "Test 404 response for a non-existent itinerary ID"
+			}
+		},
+		{
+			"name": "Get Itinerary By ID - Unauthorized (No Token)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 for unauthorized\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}"]
+				},
+				"description": "Test authentication: Request without bearer token"
+			}
 		}
 	],
 	"event": [
@@ -541,6 +865,12 @@
 			"key": "baseUrl",
 			"value": "http://localhost:8080",
 			"type": "string"
+		},
+		{
+			"key": "itineraryId",
+			"value": "",
+			"type": "string",
+			"description": "UUID of an itinerary to test. Create an itinerary first, then set this to a valid UUID from your database."
 		}
 	]
 }

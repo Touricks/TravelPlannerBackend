@@ -1,7 +1,7 @@
 {
 	"info": {
 		"_postman_id": "recommendations-collection-002",
-		"name": "02 - Recommendations",
+		"name": "04 - Recommendations",
 		"description": "Get recommendations and stats for itineraries",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},

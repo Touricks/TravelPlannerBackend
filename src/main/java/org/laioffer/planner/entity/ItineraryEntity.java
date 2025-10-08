@@ -66,7 +66,7 @@ public class ItineraryEntity {
     @Column(name = "prefer_popular_attractions")
     private Boolean preferPopularAttractions;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "itinerary_preferred_categories",
                      joinColumns = @JoinColumn(name = "itinerary_id"))
     @Column(name = "category")
