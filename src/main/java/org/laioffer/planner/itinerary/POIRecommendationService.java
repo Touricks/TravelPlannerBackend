@@ -22,7 +22,7 @@ public interface POIRecommendationService {
         Quality Requirements:
         - All coordinates MUST be accurate for the actual location
         - All required fields (name, address, description, location) are mandatory
-        - Descriptions should be informative and engaging (50-150 words)
+        - Descriptions should be informative and engaging (About 50 words)
         - Verify that coordinates are within valid ranges (lat: -90 to 90, lng: -180 to 180)
         - Focus on well-known, accessible attractions suitable for tourists
         
