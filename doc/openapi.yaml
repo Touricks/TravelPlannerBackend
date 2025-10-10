@@ -6,17 +6,39 @@ info:
     Endpoints and DTOs for creating itineraries, recommending places,
     managing an interest list, and producing a day-by-day plan.
 servers:
-  - url: https://api.example.com/v1
+  - url: https://api.example.com/api
     description: Production
-  - url: http://localhost:8080/v1
+  - url: http://localhost:8080/api
     description: Local dev
 security:
   - bearerAuth: []
 
 paths:
   /itineraries:
+    get:
+      summary: Get all itineraries for the current user
+      operationId: getUserItineraries
+      tags: [Itineraries]
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '200':
+          description: List of user's itineraries
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItinerariesListResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
     post:
-      summary: Create a new itinerary
+      summary: Create a new itinerary (async)
+      description: |
+        Creates a new itinerary and triggers asynchronous AI-powered POI generation.
+        Returns immediately with itinerary ID. Poll GET /itineraries/{id} to check
+        generation status via aiMetadata.generation_pending field.
       operationId: createItinerary
       tags: [Itineraries]
       requestBody:
@@ -26,8 +48,14 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateItineraryRequest'
       responses:
-        '201':
-          description: Created
+        '202':
+          description: |
+            Accepted - Itinerary created, AI generation started in background.
+            Check aiMetadata.generation_pending to track progress.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateItineraryResponse'
 
   /itineraries/{itineraryId}/recommendations:
     get:
@@ -62,7 +90,7 @@ paths:
 
   /itineraries/{itineraryId}/interests:
     post:
-      summary: Add a place to the itinerary's interest list
+      summary: Add a place to the itinerary's interest list or update its pinned status
       operationId: addInterest
       tags: [Interests]
       parameters:
@@ -91,7 +119,10 @@ paths:
 
   /itineraries/{itineraryId}/plan:
     post:
-      summary: Produce a day-by-day plan from interest list and constraints
+      summary: Generate a day-by-day plan from interest list and constraints
+      description: |
+        Produces an optimized travel plan and automatically saves it to the database.
+        The plan is stored with versioning support.
       operationId: planItinerary
       tags: [Planning]
       parameters:
@@ -117,6 +148,48 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/ServerError'
+    get:
+      summary: Get the active plan for an itinerary
+      description: Retrieves the currently active saved plan for the itinerary
+      operationId: getActivePlan
+      tags: [Planning]
+      parameters:
+        - $ref: '#/components/parameters/ItineraryId'
+      responses:
+        '200':
+          description: Active plan found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanItineraryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: No active plan found for this itinerary
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /itineraries/{itineraryId}/plans:
+    get:
+      summary: Get all plans (history) for an itinerary
+      description: Retrieves all saved plans for the itinerary, ordered by creation date (newest first)
+      operationId: getPlanHistory
+      tags: [Planning]
+      parameters:
+        - $ref: '#/components/parameters/ItineraryId'
+      responses:
+        '200':
+          description: List of plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PlanItineraryResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
 
 components:
   securitySchemes:
@@ -124,7 +197,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: "Firebase ID token supplied as Authorization: Bearer <token>."
+      description: "JWT token supplied as Authorization: Bearer <token>."
 
   parameters:
     ItineraryId:
@@ -220,14 +293,36 @@ components:
         traceId:
           type: string
           example: a1b2c3
+          nullable: true
         error:
           $ref: '#/components/schemas/ApiError'
-      required: [traceId, error]
+      required: [error]
 
     TravelMode:
       type: string
       enum: [DRIVING, TRANSIT, WALKING, BICYCLING]
 
+    TravelPace:
+      type: string
+      enum: [RELAXED, MODERATE, PACKED]
+      description: |
+        Travel pace preference:
+        - RELAXED: 2-3 POI/day
+        - MODERATE: 4-5 POI/day
+        - PACKED: 6+ POI/day
+
+    ActivityIntensity:
+      type: string
+      enum: [LIGHT, MODERATE, INTENSE]
+      description: |
+        Physical activity intensity:
+        - LIGHT: minimal walking
+        - MODERATE: standard walking/touring
+        - INTENSE: hiking/sports
+
+    AttractionCategory:
+      type: string
+      enum: [MUSEUM, NATURE, FOOD, CULTURE, SHOPPING, ADVENTURE, NIGHTLIFE, HISTORICAL, ENTERTAINMENT, SPORTS, ART]
 
     OpeningHoursDTO:
       type: object
@@ -274,25 +369,50 @@ components:
     PlaceDTO:
       type: object
       properties:
-        id: { type: string, format: uuid }
-        name: { type: string }
-        location: { $ref: '#/components/schemas/GeoPoint' }
-        address: { type: string }
-        contact: { $ref: '#/components/schemas/ContactDTO' }
-        imageUrl: { type: string, format: uri, nullable: true }
-        description: { type: string, nullable: true }
-        openingHours: { $ref: '#/components/schemas/OpeningHoursDTO' }
-        itineraryPlaceId: { type: integer }
-        pinned: { type: boolean, nullable: true }
-        note: { type: string, nullable: true }
-        addedAt: { type: string, format: date-time, nullable: true }
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        location:
+          $ref: '#/components/schemas/GeoPoint'
+        address:
+          type: string
+        contact:
+          $ref: '#/components/schemas/ContactDTO'
+        imageUrl:
+          type: string
+          format: uri
+          nullable: true
+        description:
+          type: string
+          nullable: true
+        openingHours:
+          $ref: '#/components/schemas/OpeningHoursDTO'
+        itineraryPlaceRecordId:
+          type: string
+          format: uuid
+          description: The UUID of the ItineraryPlace join table record
+        pinned:
+          type: boolean
+          nullable: true
+        note:
+          type: string
+          nullable: true
+        addedAt:
+          type: string
+          format: date-time
+          nullable: true
       required: [id, name, location, address]
 
     # 1) Create Itinerary
     CreateItineraryRequest:
       type: object
       properties:
-        destinationCity: { type: string }
+        destinationCity:
+          type: string
+          description: Destination city for the trip
+          example: "Tokyo"
         startDate:
           type: string
           format: date-time
@@ -303,28 +423,132 @@ components:
           format: date-time
           description: ISO 8601 datetime with timezone offset
           example: "2025-10-05T20:00:00+08:00"
-        travelMode: { $ref: '#/components/schemas/TravelMode' }
-        budgetLimitCents: { type: integer, format: int32, nullable: true }
-        dailyStart:
+        travelMode:
+          $ref: '#/components/schemas/TravelMode'
+        budgetLimitCents:
+          type: integer
+          format: int32
+          description: Budget limit in cents (USD)
+          example: 300000
+        travelPace:
+          $ref: '#/components/schemas/TravelPace'
+        activityIntensity:
+          $ref: '#/components/schemas/ActivityIntensity'
+        preferredCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttractionCategory'
+          description: Preferred attraction categories
+          example: ["CULTURE", "FOOD", "ENTERTAINMENT", "ART"]
+        numberOfTravelers:
+          type: integer
+          format: int32
+          description: Total number of travelers
+          example: 2
+        hasChildren:
+          type: boolean
+          description: Whether the group includes children
+          example: false
+        hasElderly:
+          type: boolean
+          description: Whether the group includes elderly travelers
+          example: false
+        preferPopularAttractions:
+          type: boolean
+          description: Whether to prefer popular/touristy attractions
+          example: false
+        additionalPreferences:
           type: string
-          description: Local time, HH:mm
-          example: "09:00"
-        dailyEnd:
-          type: string
-          description: Local time, HH:mm
-          example: "20:00"
-      required: [destinationCity, startDate, endDate]
+          description: Free-text additional preferences or constraints
+          example: "Interested in anime culture and traditional tea ceremonies"
+      required: [destinationCity, startDate, endDate, budgetLimitCents, travelPace]
     CreateItineraryResponse:
-      allOf:
-        - $ref: '#/components/schemas/CreateItineraryRequest'
-        - type: object
-          properties:
-            itineraryId: { type: string, format: uuid }
-            seededRecommendations:
-              type: array
-              items:
-                $ref: '#/components/schemas/PlaceDTO'
-          required: [itineraryId]
+      type: object
+      properties:
+        itineraryId:
+          type: string
+          format: uuid
+          description: Unique identifier for the created itinerary
+        destinationCity:
+          type: string
+          example: "Paris"
+        startDate:
+          type: string
+          format: date-time
+          example: "2024-06-01T09:00:00+02:00"
+        endDate:
+          type: string
+          format: date-time
+          example: "2024-06-07T18:00:00+02:00"
+        travelMode:
+          $ref: '#/components/schemas/TravelMode'
+        budgetLimitCents:
+          type: integer
+          example: 200000
+      required: [itineraryId, destinationCity, startDate, endDate, budgetLimitCents]
+
+    ItineraryDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        destinationCity:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        travelMode:
+          $ref: '#/components/schemas/TravelMode'
+        budgetLimitCents:
+          type: integer
+        travelPace:
+          $ref: '#/components/schemas/TravelPace'
+        activityIntensity:
+          $ref: '#/components/schemas/ActivityIntensity'
+        numberOfTravelers:
+          type: integer
+        hasChildren:
+          type: boolean
+        hasElderly:
+          type: boolean
+        preferPopularAttractions:
+          type: boolean
+        preferredCategories:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttractionCategory'
+        additionalPreferences:
+          type: string
+        places:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceDTO'
+        seededRecommendations:
+          type: object
+          additionalProperties: true
+        aiMetadata:
+          type: object
+          description: |
+            AI generation metadata including status.
+            - generation_pending (boolean): true if POI generation in progress
+            - generated_places_count (integer): number of places generated
+            - generation_error (string): error message if generation failed
+          additionalProperties: true
+          example:
+            generation_pending: false
+            generated_places_count: 15
+            staying_days: 6
+            recommended_poi_count: 15
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     # 2) Get Recommended Places
     RecommendationsResponse:
@@ -343,11 +567,14 @@ components:
     AddInterestRequest:
       type: object
       properties:
-        Itinerary_placeId: { type: string }
+        placeId:
+          type: string
+          format: uuid
+          description: UUID of the place to add to interests
         pinned:
           type: boolean
           description: Whether to mark the place as pinned/favorite.
-          default: false
+          default: true
       required: [placeId]
     AddInterestResponse:
       type: object
@@ -406,15 +633,39 @@ components:
     PlannedStop:
       type: object
       properties:
-        order: { type: integer, example: 1 }
-        place: { type: string, example: "Atlanta fox news"}
-        arrivalLocal: { type: string, example: "10:15" }
-        departLocal: { type: string, example: "11:30" }
-        stayMinutes: { type: integer, example: 75 }
-        note: { type: string, nullable: true }
-      required: [order, place, arrivalLocal, departLocal, stayMinutes]
+        order:
+          type: integer
+          example: 1
+        place:
+          $ref: '#/components/schemas/PlaceDTO'
+          description: Full place details including location and metadata
+        arrivalLocal:
+          type: string
+          example: "10:15"
+        departLocal:
+          type: string
+          example: "11:30"
+        stayMinutes:
+          type: integer
+          example: 75
+        note:
+          type: string
+          nullable: true
+          description: Activity or notes about this stop
+      required: [order, arrivalLocal, departLocal, stayMinutes]
 
     # Summaries
+    ItinerariesListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ItinerarySummaryDTO'
+        page:
+          $ref: '#/components/schemas/PageMeta'
+      required: [items, page]
+
     ItinerarySummaryDTO:
       type: object
       properties:

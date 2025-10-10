@@ -1,0 +1,324 @@
+{
+	"info": {
+		"_postman_id": "interests-collection-003",
+		"name": "03 - Interest Management",
+		"description": "Add and manage user interests for places in itineraries",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Add Interest - Basic Request",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response has correct structure\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('place');",
+							"    pm.expect(responseJson).to.have.property('pinned');",
+							"});",
+							"",
+							"pm.test(\"Place object has required fields\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const place = responseJson.place;",
+							"    pm.expect(place).to.have.property('id');",
+							"    pm.expect(place).to.have.property('name');",
+							"    pm.expect(place).to.have.property('address');",
+							"    pm.expect(place).to.have.property('location');",
+							"    pm.expect(place).to.have.property('itineraryPlaceRecordId');",
+							"});",
+							"",
+							"pm.test(\"Pinned status matches request\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    const requestJson = JSON.parse(pm.request.body.raw);",
+							"    pm.expect(responseJson.pinned).to.eql(requestJson.pinned);",
+							"});",
+							"",
+							"pm.test(\"Response time is less than 2000ms\", function () {",
+							"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"placeId\": \"{{placeId}}\",\n    \"pinned\": false\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
+				}
+			}
+		},
+		{
+			"name": "Add Interest - Pinned Place",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Place is marked as pinned\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.pinned).to.be.true;",
+							"    pm.expect(responseJson.place.pinned).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Response structure is valid\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('place');",
+							"    pm.expect(responseJson).to.have.property('pinned');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"placeId\": \"{{placeId2}}\",\n    \"pinned\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
+				}
+			}
+		},
+		{
+			"name": "Add Interest - Update Existing Place",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Pinned status updated successfully\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.pinned).to.be.true;",
+							"});",
+							"",
+							"pm.test(\"Place ID remains the same\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.place).to.have.property('id');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"placeId\": \"{{samplePlaceId}}\",\n    \"pinned\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
+				}
+			}
+		},
+		{
+			"name": "Add Interest - Invalid UUID Format",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400 for invalid format\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"pm.test(\"Response indicates bad request\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"placeId\": \"invalid-uuid-format\",\n    \"pinned\": false\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
+				}
+			}
+		},
+		{
+			"name": "Add Interest - Unauthorized Access",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 401 for missing auth\", function () {",
+							"    pm.response.to.have.status(401);",
+							"});",
+							"",
+							"pm.test(\"Response indicates authentication required\", function () {",
+							"    pm.expect(pm.response.code).to.eql(401);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"placeId\": \"{{placeId}}\",\n    \"pinned\": false\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
+				}
+			}
+		},
+		{
+			"name": "Add Interest - Nonexistent Itinerary",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 404 for nonexistent itinerary\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"Response indicates not found\", function () {",
+							"    pm.expect(pm.response.code).to.eql(404);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"placeId\": \"{{samplePlaceId}}\",\n    \"pinned\": false\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{nonexistentItineraryId}}/interests",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{nonexistentItineraryId}}", "interests"]
+				}
+			}
+		}
+	]
+}

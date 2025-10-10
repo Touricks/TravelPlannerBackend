@@ -27,16 +27,12 @@ public interface PlaceRepository extends JpaRepository<PlaceEntity, UUID> {
            "AND (:query IS NULL OR :query = '' OR " +
            " LOWER(ip.name) LIKE LOWER(CONCAT('%', :query, '%')) OR " +
            " LOWER(ip.description) LIKE LOWER(CONCAT('%', :query, '%')))")
+
     Page<ItineraryPlaceEntity> findItineraryPlacesByItinerary(
             @Param("itineraryId") UUID itineraryId,
             @Param("query") String query,
             Pageable pageable
     );
-    
-    /**
-     * Find places by source (e.g., 'google_places')
-     */
-    List<PlaceEntity> findBySource(String source);
     
     /**
      * Find places within a geographic bounding box (for future location-based recommendations)

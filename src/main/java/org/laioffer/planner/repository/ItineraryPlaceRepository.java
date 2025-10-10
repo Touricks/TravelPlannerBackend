@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
@@ -17,12 +18,22 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
     /**
      * Find all places for a specific itinerary
      */
-    List<ItineraryPlaceEntity> findByItineraryId(UUID itineraryId);
+    List<ItineraryPlaceEntity> findAllByItineraryId(UUID itineraryId);
+
+    /**
+     * Find a subset of places for a specific itinerary by their IDs.
+     */
+    List<ItineraryPlaceEntity> findAllByItineraryIdAndIdIn(UUID itineraryId, List<UUID> ids);
     
     /**
      * Check if a specific place is already added to an itinerary
      */
     boolean existsByItineraryIdAndPlaceId(UUID itineraryId, UUID placeId);
+
+    /**
+     * Find a specific place in an itinerary by itineraryId and placeId
+     */
+    Optional<ItineraryPlaceEntity> findByItineraryIdAndPlaceId(UUID itineraryId, UUID placeId);
     
     /**
      * Find places by itinerary and pinned status
@@ -88,7 +99,18 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
     @Modifying
     @Transactional
     @Query("UPDATE ItineraryPlaceEntity ip SET ip.note = :note WHERE ip.itineraryId = :itineraryId AND ip.placeId = :placeId")
-    void updateNote(@Param("itineraryId") UUID itineraryId, 
-                    @Param("placeId") UUID placeId, 
+    void updateNote(@Param("itineraryId") UUID itineraryId,
+                    @Param("placeId") UUID placeId,
                     @Param("note") String note);
+
+    /**
+     * Find ItineraryPlace by ID and verify user ownership in a single query.
+     * Fetch joins ensure itinerary and user are available for downstream checks.
+     */
+    @Query("SELECT ip FROM ItineraryPlaceEntity ip " +
+           "JOIN FETCH ip.itinerary i " +
+           "JOIN FETCH i.user u " +
+           "WHERE ip.id = :itineraryPlaceId AND u.id = :userId")
+    Optional<ItineraryPlaceEntity> findByIdAndUserId(@Param("itineraryPlaceId") UUID itineraryPlaceId,
+                                                     @Param("userId") Long userId);
 }

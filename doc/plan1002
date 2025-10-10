@@ -1,0 +1,280 @@
+  决策1：新增字段的存储方式
+
+  方案：使用 JSONB 字段存储用户偏好
+
+  - ✅ 在 ItineraryEntity 中新增 userPreferences JSONB 列
+  - 理由：
+    - 这些字段主要用于传给 LLM，不需要频繁查询
+    - 避免添加大量列，保持 schema 简洁
+    - 灵活性高，后续调整字段无需 migration
+    - 遵循现有设计模式（已有 aiMetadata, seededRecommendations JSONB 字段）
+
+  决策2：TravelMode 命名
+
+  方案：保持字段名为 travelMode，只改 enum 值
+
+  - ✅ 保持实体字段名：travelMode
+  - ✅ 更新 enum 值：添加 MIXED 选项
+  - 理由：
+    - 避免数据库列重命名的 migration 复杂度
+    - travelMode 已足够表达含义
+
+  决策3：dailyStart/dailyEnd 处理
+
+  方案：从 Request 移除，但保留 Entity 字段
+
+  - ✅ 从 CreateItineraryRequest 移除
+  - ✅ ItineraryEntity 保留字段（兼容已有数据）
+  - ✅ ItineraryServiceImpl 移除相关映射逻辑
+  - 理由：
+    - 这些字段应该在 PlanItineraryRequest 中使用
+    - 保留 Entity 字段避免破坏已有数据
+
+  ---
+  📝 详细修改清单
+
+  第一步：新增 Enum 定义
+
+  1.1 创建 AttractionCategory.java
+
+  📁 位置： src/main/java/org/laioffer/planner/itinerary/model/common/AttractionCategory.java
+
+  public enum AttractionCategory {
+      MUSEUM,
+      NATURE,
+      FOOD,
+      CULTURE,
+      SHOPPING,
+      ADVENTURE,
+      NIGHTLIFE,
+      HISTORICAL,
+      ENTERTAINMENT,
+      SPORTS,
+      ART
+  }
+
+  1.2 创建 TravelPace.java
+
+  📁 位置： src/main/java/org/laioffer/planner/itinerary/model/common/TravelPace.java
+
+  public enum TravelPace {
+      RELAXED,    // 2-3 POI/day
+      MODERATE,   // 4-5 POI/day
+      PACKED      // 6+ POI/day
+  }
+
+  1.3 创建 ActivityIntensity.java
+
+  📁 位置： src/main/java/org/laioffer/planner/itinerary/model/common/ActivityIntensity.java
+
+  public enum ActivityIntensity {
+      LIGHT,      // minimal walking
+      MODERATE,
+      INTENSE     // hiking/sports
+  }
+
+  1.4 更新 TravelMode.java
+
+  📁 位置： src/main/java/org/laioffer/planner/itinerary/model/common/TravelMode.java
+
+  public enum TravelMode {
+      DRIVING,
+      TRANSIT,      // 保持现有名称
+      WALKING,
+      BICYCLING,
+      MIXED         // 新增
+  }
+
+  ---
+  第二步：修改 CreateItineraryRequest
+
+  2.1 更新 CreateItineraryRequest.java
+
+  📁 位置： src/main/java/org/laioffer/planner/itinerary/model/common/CreateItineraryRequest.java
+
+  修改内容：
+  1. ❌ 移除 dailyStart, dailyEnd
+  2. ✅ 将 budgetLimitCents 添加 @NotNull 注解
+  3. ✅ 添加新字段：
+    - preferredCategories: List<AttractionCategory>
+    - numberOfTravelers: Integer
+    - hasChildren: Boolean
+    - hasElderly: Boolean
+    - travelPace: TravelPace (标记为 @NotNull)
+    - activityIntensity: ActivityIntensity
+    - preferPopularAttractions: Boolean
+    - additionalPreferences: String
+
+  ---
+  第三步：修改 ItineraryEntity
+
+  3.1 更新 ItineraryEntity.java
+
+  📁 位置： src/main/java/org/laioffer/planner/entity/ItineraryEntity.java
+
+  修改内容：
+  1. ✅ 新增 JSONB 字段：
+  @Type(JsonType.class)
+  @Column(name = "user_preferences", columnDefinition = "jsonb")
+  private Map<String, Object> userPreferences;
+  2. ✅ 保留 dailyStart, dailyEnd 字段（向后兼容）
+  3. ✅ 添加 getter/setter for userPreferences
+
+  ---
+  第四步：修改 ItineraryServiceImpl
+
+  4.1 更新 ItineraryServiceImpl.java
+
+  📁 位置： src/main/java/org/laioffer/planner/itinerary/ItineraryServiceImpl.java
+
+  修改内容：
+
+  1. 移除 dailyStart/dailyEnd 映射逻辑：
+  // 删除这些代码：
+  // if (request.getDailyStart() != null) {
+  //     itinerary.setDailyStart(parseTime(request.getDailyStart()));
+  // }
+  // if (request.getDailyEnd() != null) {
+  //     itinerary.setDailyEnd(parseTime(request.getDailyEnd()));
+  // }
+  2. 添加 userPreferences 映射逻辑：
+  // 在 createItinerary 方法中添加：
+  Map<String, Object> userPrefs = buildUserPreferences(request);
+  itinerary.setUserPreferences(userPrefs);
+  3. 新增辅助方法 buildUserPreferences：
+  private Map<String, Object> buildUserPreferences(CreateItineraryRequest request) {
+      Map<String, Object> prefs = new HashMap<>();
+
+      if (request.getPreferredCategories() != null) {
+          prefs.put("preferred_categories", request.getPreferredCategories());
+      }
+      if (request.getNumberOfTravelers() != null) {
+          prefs.put("number_of_travelers", request.getNumberOfTravelers());
+      }
+      if (request.getHasChildren() != null) {
+          prefs.put("has_children", request.getHasChildren());
+      }
+      if (request.getHasElderly() != null) {
+          prefs.put("has_elderly", request.getHasElderly());
+      }
+      if (request.getTravelPace() != null) {
+          prefs.put("travel_pace", request.getTravelPace().name());
+      }
+      if (request.getActivityIntensity() != null) {
+          prefs.put("activity_intensity", request.getActivityIntensity().name());
+      }
+      if (request.getPreferPopularAttractions() != null) {
+          prefs.put("prefer_popular_attractions", request.getPreferPopularAttractions());
+      }
+      if (request.getAdditionalPreferences() != null) {
+          prefs.put("additional_preferences", request.getAdditionalPreferences());
+      }
+
+      return prefs;
+  }
+  4. 更新 calculatePOICount 方法（基于 TravelPace）：
+  private int calculatePOICount(int stayingDays, TravelPace pace) {
+      int poiPerDay = switch (pace) {
+          case RELAXED -> 2;
+          case MODERATE -> 4;
+          case PACKED -> 6;
+      };
+      return Math.min(stayingDays * poiPerDay, MAX_POI_COUNT);
+  }
+  5. 更新 validateRequest 方法：
+  // 添加 budgetLimitCents 必填校验
+  if (request.getBudgetLimitCents() == null) {
+      throw new IllegalArgumentException("Budget is required");
+  }
+
+  // 添加 travelPace 必填校验
+  if (request.getTravelPace() == null) {
+      throw new IllegalArgumentException("Travel pace is required");
+  }
+
+  // 移除 dailyStart/dailyEnd 的校验逻辑
+  6. 移除 parseTime 方法（不再需要）
+
+  ---
+  第五步：数据库 Migration
+
+  5.1 创建 Migration 脚本
+
+  📁 位置： src/main/resources/db/migration/V{version}__add_user_preferences_to_itinerary.sql
+
+  -- 添加 user_preferences JSONB 列
+  ALTER TABLE itineraries
+  ADD COLUMN user_preferences JSONB DEFAULT '{}'::jsonb;
+
+  -- 为 user_preferences 添加 GIN 索引（可选，用于查询优化）
+  CREATE INDEX idx_itineraries_user_preferences
+  ON itineraries USING GIN (user_preferences);
+
+  -- 更新 TravelMode enum（如果需要添加 MIXED）
+  -- 注意：PostgreSQL enum 更新需要谨慎操作
+  ALTER TYPE travel_mode ADD VALUE IF NOT EXISTS 'MIXED';
+
+  ⚠️ 注意事项：
+  - 如果使用 Flyway/Liquibase，需要确定版本号
+  - 如果 travel_mode 不是独立的 enum type，此步骤可能不需要
+
+  ---
+  第六步：Repository（无需修改）
+
+  ✅ ItineraryRepository 无需修改
+  - JSONB 字段由 JPA/Hibernate 自动处理
+  - 现有查询方法不受影响
+
+  ---
+  🔄 影响范围分析
+
+  ✅ 需要修改的文件（8个）
+
+  1. Enum 定义（4个新文件）：
+    - AttractionCategory.java
+    - TravelPace.java
+    - ActivityIntensity.java
+    - TravelMode.java（更新）
+  2. Model/Request（1个）：
+    - CreateItineraryRequest.java
+  3. Entity（1个）：
+    - ItineraryEntity.java
+  4. Service（1个）：
+    - ItineraryServiceImpl.java
+  5. Database Migration（1个）：
+    - V{version}__add_user_preferences_to_itinerary.sql
+
+  ⚠️ 可能需要同步更新的地方
+
+  1. 测试文件：
+    - ItineraryControllerTest.java
+    - ItineraryServiceImplTest.java
+    - 需要更新测试用例中的 CreateItineraryRequest 构造
+  2. Recommendation 模块的重复类：
+    - 如果 org.laioffer.planner.Recommendation.model.itinerary.CreateItineraryRequest 也在使用，需要同步修改
+
+  ---
+  📊 修改优先级
+
+  Phase 1 (核心修改，必须完成):
+
+  1. ✅ 创建新 Enum 类
+  2. ✅ 修改 CreateItineraryRequest
+  3. ✅ 修改 ItineraryEntity
+  4. ✅ 修改 ItineraryServiceImpl
+  5. ✅ 数据库 Migration
+
+  Phase 2 (兼容性修改):
+
+  6. ⚠️ 更新测试用例
+  7. ⚠️ 同步 Recommendation 模块的 DTO
+
+  ---
+  ⚡ 是否需要数据库 Migration？
+
+  是的，需要但影响很小：
+  - 只需添加一个 JSONB 列 user_preferences
+  - 使用 DEFAULT '{}'::jsonb，对已有数据无影响
+  - TravelMode 添加 MIXED 值（如果存储为 enum type）
+
+  ---

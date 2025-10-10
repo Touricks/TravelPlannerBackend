@@ -1,0 +1,361 @@
+系统设计方案讨论：
+
+  一、现有系统流程分析
+
+  现有系统的推荐流程：
+  用户请求 → ItineraryServiceImpl → LangChain4jLLMService → POIRecommendationService (LLM) → POIService → 持久化
+
+  现有问题：
+  - 推荐仅基于请求参数（目的地、预算、交通方式等），缺乏个性化
+  - 没有利用用户历史行为（pinned 状态）
+  - 没有利用景点间的关系（相似度、协同推荐）
+  - 每次都是"冷启动"，效率低
+
+  二、LightRAG 核心思想应用
+
+  基于 CSE8803 proposal，LightRAG 的优势在于：
+
+  1. 图谱结构设计
+  Georgia (State)
+    ├─ Atlanta (City)
+    │   ├─ Georgia Aquarium [Museum]
+    │   ├─ World of Coca-Cola [Museum]
+    │   └─ Piedmont Park [Nature]
+    ├─ Savannah (City)
+    │   ├─ Forsyth Park [Nature]
+    │   └─ River Street [Shopping]
+    └─ Blue Ridge (Region)
+        └─ Amicalola Falls [Nature]
+
+  关键关系：
+  - located_in: Attraction → City → State
+  - has_category: Attraction → Category
+  - similar_to: Attraction ↔ Attraction
+  - visited_by: User → Attraction (with pinned status)
+  - recommended_with: Attraction ↔ Attraction (协同推荐)
+
+  2. 双层检索机制
+  - 实体级检索：基于用户偏好（destination, category, budget）检索相关节点
+  - 关系级检索：通过多跳遍历找到相似景点、协同推荐、历史偏好模式
+
+  三、系统设计方案
+
+  架构层次
+
+  ┌─────────────────────────────────────────────────────┐
+  │           ItineraryServiceImpl (核心编排)            │
+  │  1. 调用 LightRAGService 检索用户偏好上下文          │
+  │  2. 增强 LLM 提示词                                  │
+  │  3. 生成 POI                                         │
+  │  4. 更新知识图谱                                     │
+  └─────────────────────────────────────────────────────┘
+                           ↓
+          ┌────────────────┴────────────────┐
+          ↓                                  ↓
+  ┌──────────────────┐            ┌──────────────────────┐
+  │ LightRAGService  │            │ LangChain4jLLMService│
+  │ - 图谱检索       │            │ (增强版)              │
+  │ - 上下文构建     │            │ - 接收检索上下文      │
+  │ - 图谱更新       │            │ - 增强提示词          │
+  └──────────────────┘            └──────────────────────┘
+          ↓                                  ↓
+  ┌──────────────────┐            ┌──────────────────────┐
+  │ 知识图谱存储     │            │ POIRecommendationSvc │
+  │ (Neo4j/Neptune)  │            │ (增强提示词模板)      │
+  └──────────────────┘            └──────────────────────┘
+
+  核心模块设计
+
+  1. LightRAGService (新增)
+
+  public interface LightRAGService {
+      // 检索用户偏好上下文
+      UserPreferenceContext retrieveUserContext(
+          UserEntity user, 
+          CreateItineraryRequest request
+      );
+
+      // 更新知识图谱
+      void updateKnowledgeGraph(
+          UserEntity user,
+          ItineraryEntity itinerary,
+          List<PlaceEntity> places
+      );
+  }
+
+  检索逻辑：
+  1. 基于 destination 找到 City 节点
+  2. 基于 user.id 找到历史 visited/pinned 的 Attraction
+  3. 基于 pinned Attraction 找到 similar_to 关系的推荐
+  4. 基于 category 偏好找到相关景点
+  5. 基于 budget/travelMode 过滤结果
+
+  2. UserPreferenceContext (新增模型)
+
+  public class UserPreferenceContext {
+      // 用户历史偏好
+      private List<CategoryPreference> categoryPreferences;
+
+      // 相似景点推荐
+      private List<SimilarPlaceRecommendation> similarPlaces;
+
+      // 协同推荐（其他用户的模式）
+      private List<CollaborativeRecommendation> collaborativeRecs;
+
+      // 地理位置上下文
+      private GeographicContext geoContext;
+
+      // 预算/时间约束
+      private ConstraintContext constraints;
+  }
+
+  3. POIRecommendationService 增强
+
+  在现有的系统消息基础上，注入 LightRAG 上下文：
+
+  @UserMessage("""
+      Generate {{maxRecommendations}} tourist attractions for {{destinationCity}}.
+      
+      Trip Details:
+      - Destination: {{destinationCity}}
+      - Budget: ${{budgetInDollars}}
+      - Travel mode: {{travelMode}}
+      - Duration: {{stayingDays}} days
+      
+      **USER PREFERENCE CONTEXT (from LightRAG):**
+      {{#userContext}}
+      - User's favorite categories: {{#categoryPreferences}}{{category}} ({{weight}}){{/categoryPreferences}}
+      - Previously liked attractions: {{#pinnedPlaces}}{{name}} in {{city}}{{/pinnedPlaces}}
+      - Similar attractions to consider: {{#similarPlaces}}{{name}} (similarity: {{score}}){{/similarPlaces}}
+      - Collaborative recommendations: {{#collaborativeRecs}}{{name}} (co-visited by {{count}} similar users){{/collaborativeRecs}}
+      {{/userContext}}
+      
+      Please prioritize attractions that:
+      1. Match the user's historical preferences
+      2. Are similar to their previously liked attractions
+      3. Are frequently visited together by similar users
+      4. Fit the budget and travel mode constraints
+      """)
+
+  流程设计
+
+  创建行程流程（增强版）
+
+  在 ItineraryServiceImpl.createItinerary 中：
+
+  public void createItinerary(CreateItineraryRequest request, UserEntity user) {
+      // 1. 现有验证逻辑
+      validateRequest(request);
+
+      // 2. 创建行程实体
+      ItineraryEntity itinerary = new ItineraryEntity();
+      // ... 设置属性
+
+      // 3. ★ 调用 LightRAG 检索用户上下文
+      UserPreferenceContext context = lightRAGService.retrieveUserContext(user, request);
+
+      // 4. 记录上下文到 aiMetadata
+      Map<String, Object> aiMetadata = new HashMap<>();
+      aiMetadata.put("lightrag_context", context);
+      aiMetadata.put("staying_days", stayingDays);
+      itinerary.setAiMetadata(aiMetadata);
+
+      ItineraryEntity savedItinerary = itineraryRepository.save(itinerary);
+
+      try {
+          // 5. ★ 使用增强的上下文调用 LLM
+          List<PlaceDTO> recommendedPlaces = llmService.generatePOIRecommendations(
+              savedItinerary,
+              poiCount,
+              context  // ← 传入 LightRAG 上下文
+          );
+
+          // 6. 持久化 POI
+          List<PlaceEntity> createdPlaces = poiService.createAndAddPlacesToItinerary(
+              recommendedPlaces,
+              savedItinerary
+          );
+
+          // 7. ★ 更新知识图谱
+          lightRAGService.updateKnowledgeGraph(user, savedItinerary, createdPlaces);
+
+          // 8. 更新元数据
+          aiMetadata.put("generation_pending", false);
+          aiMetadata.put("generated_places_count", createdPlaces.size());
+          savedItinerary.setAiMetadata(aiMetadata);
+          itineraryRepository.save(savedItinerary);
+
+      } catch (Exception e) {
+          // 回退策略：使用现有流程
+          logger.warn("LightRAG failed, falling back to standard generation", e);
+          // ... 现有错误处理
+      }
+  }
+
+  图谱更新流程
+
+  当用户 pin/unpin 景点时（InterestServiceImpl）：
+
+  public AddInterestResponse addInterest(AddInterestRequest request, UserEntity user) {
+      // ... 现有验证逻辑
+
+      itineraryPlace.setPinned(request.isPinned());
+      ItineraryPlaceEntity updated = itineraryPlaceRepository.save(itineraryPlace);
+
+      // ★ 更新知识图谱中的偏好权重
+      lightRAGService.updateUserPreference(
+          user,
+          updated.getPlace(),
+          request.isPinned()
+      );
+
+      return new AddInterestResponse(placeDTO, updated.isPinned());
+  }
+
+  知识图谱建模
+
+  节点类型
+
+  // User 节点
+  (u:User {
+    id: Long,
+    email: String,
+    created_at: DateTime
+  })
+
+  // City 节点
+  (c:City {
+    name: String,
+    state: String,
+    country: String
+  })
+
+  // Attraction 节点
+  (a:Attraction {
+    id: UUID,
+    name: String,
+    address: String,
+    lat: Double,
+    lng: Double,
+    description: String
+  })
+
+  // Category 节点
+  (cat:Category {
+    name: String  // Museum, Nature, Shopping, etc.
+  })
+
+  // TravelProfile 节点（用户画像）
+  (tp:TravelProfile {
+    user_id: Long,
+    budget_preference: String,
+    travel_mode_preference: String
+  })
+
+  关系类型
+
+  // 地理位置关系
+  (a:Attraction)-[:LOCATED_IN]->(c:City)
+
+  // 类别关系
+  (a:Attraction)-[:HAS_CATEGORY]->(cat:Category)
+
+  // 用户兴趣关系（带权重）
+  (u:User)-[:INTERESTED_IN {weight: Double, pinned: Boolean, timestamp: DateTime}]->(a:Attraction)
+
+  // 相似度关系（基于特征、类别、用户行为计算）
+  (a1:Attraction)-[:SIMILAR_TO {score: Double}]->(a2:Attraction)
+
+  // 协同推荐关系
+  (a1:Attraction)-[:RECOMMENDED_WITH {co_visit_count: Int, confidence: Double}]->(a2:Attraction)
+
+  // 用户画像关系
+  (u:User)-[:HAS_PROFILE]->(tp:TravelProfile)
+
+  检索算法示例
+
+  Cypher 查询示例：获取个性化推荐上下文
+
+  // 1. 找到用户历史偏好的类别
+  MATCH (u:User {id: $userId})-[i:INTERESTED_IN]->(a:Attraction)-[:HAS_CATEGORY]->(c:Category)
+  WHERE i.pinned = true
+  WITH c, SUM(i.weight) AS category_weight
+  ORDER BY category_weight DESC
+  LIMIT 5
+  WITH COLLECT({category: c.name, weight: category_weight}) AS categoryPrefs
+
+  // 2. 找到目标城市中匹配偏好类别的景点
+  MATCH (city:City {name: $destinationCity})<-[:LOCATED_IN]-(rec:Attraction)-[:HAS_CATEGORY]->(c:Category)
+  WHERE c.name IN [pref IN categoryPrefs | pref.category]
+  WITH rec, categoryPrefs, 
+       [pref IN categoryPrefs WHERE pref.category IN [(rec)-[:HAS_CATEGORY]->(cat) | cat.name] | pref.weight][0] AS match_weight
+
+  // 3. 找到与用户 pinned 景点相似的推荐
+  OPTIONAL MATCH (u:User {id: $userId})-[:INTERESTED_IN {pinned: true}]->(pinned:Attraction)-[s:SIMILAR_TO]->(rec)
+  WITH rec, match_weight, COLLECT({name: pinned.name, similarity: s.score}) AS similar_places
+
+  // 4. 找到协同推荐
+  OPTIONAL MATCH (rec)-[r:RECOMMENDED_WITH]->(other:Attraction)
+  WHERE (city:City {name: $destinationCity})<-[:LOCATED_IN]-(other)
+  WITH rec, match_weight, similar_places,
+       COLLECT({name: other.name, co_visit_count: r.co_visit_count}) AS collab_recs
+
+  // 5. 返回上下文
+  RETURN {
+    attraction: rec,
+    category_match_weight: match_weight,
+    similar_to_history: similar_places,
+    collaborative_recommendations: collab_recs
+  } AS context
+  ORDER BY match_weight DESC
+  LIMIT 20
+
+  四、关键技术点
+
+  1. 回退策略
+
+  - 当 LightRAG 检索失败时，回退到现有的 LangChain4jLLMService
+  - 保持系统可用性
+
+  2. 渐进式增强
+
+  - 初始用户没有历史数据时，使用基础推荐
+  - 随着用户交互增加，推荐质量逐步提升
+
+  3. 图谱数据源
+
+  - 初始数据：从现有 PlaceEntity 和 ItineraryPlaceEntity 迁移
+  - 增量数据：从用户行为（pinned）实时更新
+  - 外部数据：可集成 Google Places、TripAdvisor API
+
+  4. 性能优化
+
+  - 使用图数据库索引（Neo4j/Amazon Neptune）
+  - 缓存热门查询结果
+  - 异步更新图谱（不阻塞推荐流程）
+
+  五、实施建议
+
+  基于 ItinerarySystemDesign 的建议，我建议分阶段实施：
+
+  Phase 1: 图谱构建
+  - 设计图谱 schema
+  - 从现有数据库迁移数据到图数据库
+  - 实现基础的图谱查询接口
+
+  Phase 2: 检索集成
+  - 实现 LightRAGService
+  - 在 ItineraryServiceImpl 中插入检索调用
+  - 增强 POIRecommendationService 的提示词模板
+
+  Phase 3: 反馈循环
+  - 在 InterestServiceImpl 中添加图谱更新逻辑
+  - 实现协同推荐关系计算
+  - 实现相似度计算（基于特征向量）
+
+  Phase 4: 优化与监控
+  - 添加 A/B 测试框架
+  - 监控推荐质量指标
+  - 优化检索算法
+
+  这个设计方案结合了现有系统的优势（LangChain4j、多次重试、事务管理）和 LightRAG 的图检索能力，能够在保持系统稳定性的前提下，显著提升推荐的个性化程度。
