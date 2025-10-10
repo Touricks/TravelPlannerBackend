@@ -80,9 +80,9 @@
 					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				}
 			}
 		},
@@ -134,9 +134,9 @@
 					"raw": "{\n    \"interestPlaceIds\": [\"{{placeId1}}\", \"{{placeId2}}\"],\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\",\n    \"avoidCrowds\": true,\n    \"minimizeTransfers\": false,\n    \"balanceCategories\": true\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				},
 				"description": "Plan itinerary with specific selected places and all available options"
 			}
@@ -185,9 +185,9 @@
 					"raw": "{\n    \"startDate\": \"2024-03-01T10:00:00-08:00\",\n    \"endDate\": \"2024-03-05T18:00:00-08:00\",\n    \"travelMode\": \"DRIVING\",\n    \"dailyStart\": \"10:00\",\n    \"dailyEnd\": \"19:00\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				},
 				"description": "Plan itinerary with explicit start and end dates"
 			}
@@ -235,9 +235,9 @@
 					"raw": "{\n    \"travelMode\": \"TRANSIT\",\n    \"dailyStart\": \"08:00\",\n    \"dailyEnd\": \"20:00\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				}
 			}
 		},
@@ -284,9 +284,9 @@
 					"raw": "{\n    \"travelMode\": \"DRIVING\",\n    \"dailyStart\": \"10:00\",\n    \"dailyEnd\": \"19:00\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				}
 			}
 		},
@@ -328,9 +328,9 @@
 					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/invalid-uuid/plan",
+					"raw": "{{baseUrl}}/api/itineraries/invalid-uuid/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "invalid-uuid", "plan"]
+					"path": ["api", "itineraries", "invalid-uuid", "plan"]
 				}
 			}
 		},
@@ -372,9 +372,9 @@
 					"raw": "{\n    \"travelMode\": \"WALKING\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				}
 			}
 		},
@@ -406,10 +406,109 @@
 					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\"\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
-					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
 				}
+			}
+		},
+		{
+			"name": "Get Active Plan",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200 or 404\", function () {",
+							"    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+							"});",
+							"",
+							"if (pm.response.code === 200) {",
+							"    pm.test(\"Response has correct structure\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson).to.have.property('itineraryId');",
+							"        pm.expect(responseJson).to.have.property('days');",
+							"    });",
+							"    ",
+							"    pm.test(\"Days array is present and valid\", function () {",
+							"        const responseJson = pm.response.json();",
+							"        pm.expect(responseJson.days).to.be.an('array');",
+							"    });",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "plan"]
+				},
+				"description": "Get the active plan for an itinerary"
+			}
+		},
+		{
+			"name": "Get Plan History",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response is an array\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Each plan has required fields\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    if (responseJson.length > 0) {",
+							"        const plan = responseJson[0];",
+							"        pm.expect(plan).to.have.property('itineraryId');",
+							"        pm.expect(plan).to.have.property('days');",
+							"    }",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/plans",
+					"host": ["{{baseUrl}}"],
+					"path": ["api", "itineraries", "{{itineraryId}}", "plans"]
+				},
+				"description": "Get all plans (history) for an itinerary"
 			}
 		}
 	]

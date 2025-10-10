@@ -4,28 +4,28 @@ import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public class AddInterestRequest {
-    @NotNull(message = "itineraryPlaceId is required")
-    private UUID itineraryPlaceId;
+    @NotNull(message = "placeId is required")
+    private UUID placeId;
 
     private boolean pinned = true;
 
     public AddInterestRequest() {}
 
-    public AddInterestRequest(UUID itineraryPlaceId) {
-        this.itineraryPlaceId = itineraryPlaceId;
+    public AddInterestRequest(UUID placeId) {
+        this.placeId = placeId;
     }
 
-    public AddInterestRequest(UUID itineraryPlaceId, boolean pinned) {
-        this.itineraryPlaceId = itineraryPlaceId;
+    public AddInterestRequest(UUID placeId, boolean pinned) {
+        this.placeId = placeId;
         this.pinned = pinned;
     }
 
-    public UUID getItineraryPlaceId() {
-        return itineraryPlaceId;
+    public UUID getPlaceId() {
+        return placeId;
     }
 
-    public void setItineraryPlaceId(UUID itineraryPlaceId) {
-        this.itineraryPlaceId = itineraryPlaceId;
+    public void setPlaceId(UUID placeId) {
+        this.placeId = placeId;
     }
 
     public boolean isPinned() {
@@ -39,7 +39,7 @@ public class AddInterestRequest {
     @Override
     public String toString() {
         return "AddInterestRequest{" +
-                "itineraryPlaceId=" + itineraryPlaceId +
+                "placeId=" + placeId +
                 ", pinned=" + pinned +
                 '}';
     }

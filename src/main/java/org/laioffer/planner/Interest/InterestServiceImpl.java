@@ -30,44 +30,51 @@ public class InterestServiceImpl implements InterestService {
     
     @Override
     @Transactional
-    public AddInterestResponse addInterest(AddInterestRequest request, UserEntity user) {
-        if (request == null || request.getItineraryPlaceId() == null) {
-            throw new IllegalArgumentException("itineraryPlaceId must be provided");
+    public AddInterestResponse addInterest(UUID itineraryId, AddInterestRequest request, UserEntity user) {
+        if (itineraryId == null) {
+            throw new IllegalArgumentException("itineraryId must be provided");
+        }
+
+        if (request == null || request.getPlaceId() == null) {
+            throw new IllegalArgumentException("placeId must be provided");
         }
 
         if (user == null || user.getId() == null) {
             throw new SecurityException("Authenticated user is required");
         }
 
-        UUID itineraryPlaceId = request.getItineraryPlaceId();
+        UUID placeId = request.getPlaceId();
 
-        logger.info("Processing interest for itineraryPlaceId: {}, user: {}",
-                itineraryPlaceId, user.getEmail());
+        logger.info("Processing interest for placeId: {}, itineraryId: {}, user: {}",
+                placeId, itineraryId, user.getEmail());
 
+        // Find the ItineraryPlace record using itineraryId and placeId
         ItineraryPlaceEntity itineraryPlace = itineraryPlaceRepository
-                .findById(itineraryPlaceId)
+                .findByItineraryIdAndPlaceId(itineraryId, placeId)
                 .orElseThrow(() -> new RuntimeException(
-                        "Itinerary place not found: " + itineraryPlaceId));
+                        "Place " + placeId + " not found in itinerary " + itineraryId));
 
+        // Verify user ownership
         ItineraryEntity itinerary = itineraryPlace.getItinerary();
         if (itinerary == null || itinerary.getUser() == null) {
             throw new RuntimeException(
-                    "Itinerary not found for itinerary place: " + itineraryPlaceId);
+                    "Itinerary not found for place: " + placeId);
         }
 
         Long ownerId = itinerary.getUser().getId();
         if (ownerId == null || !ownerId.equals(user.getId())) {
-            logger.warn("Unauthorized access attempt by user {} on itineraryPlace {}",
-                    user.getEmail(), itineraryPlaceId);
+            logger.warn("Unauthorized access attempt by user {} on itinerary {} place {}",
+                    user.getEmail(), itineraryId, placeId);
             throw new SecurityException(
                     "User does not own the itinerary for the requested place");
         }
 
+        // Update pinned status
         itineraryPlace.setPinned(request.isPinned());
         ItineraryPlaceEntity updatedItineraryPlace = itineraryPlaceRepository.save(itineraryPlace);
 
-        logger.info("Updated pinned status to {} for itineraryPlace: {}",
-                request.isPinned(), itineraryPlaceId);
+        logger.info("Updated pinned status to {} for place: {} in itinerary: {}",
+                request.isPinned(), placeId, itineraryId);
 
         PlaceDTO placeDTO = placeMapper.toItineraryPlaceDTO(updatedItineraryPlace);
 

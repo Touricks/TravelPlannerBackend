@@ -11,33 +11,37 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
-@RequestMapping("/api/itineraries/interests")
+@RequestMapping("/api/itineraries")
 public class InterestController {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(InterestController.class);
     private final InterestService interestService;
-    
+
     public InterestController(InterestService interestService) {
         this.interestService = interestService;
     }
-    
+
     /**
      * Add or update interest (pin/unpin) for a place in an itinerary
      *
-     * @param request AddInterestRequest containing itineraryPlaceId and pinned status
+     * @param itineraryId UUID of the itinerary
+     * @param request AddInterestRequest containing placeId and pinned status
      * @param user Authenticated user from JWT token
      * @return AddInterestResponse with place details and pinned status
      */
-    @PostMapping
+    @PostMapping("/{itineraryId}/interests")
     public ResponseEntity<?> addInterest(
+            @PathVariable UUID itineraryId,
             @Validated @RequestBody AddInterestRequest request,
             @AuthenticationPrincipal UserEntity user) {
-        logger.info("Adding interest with itineraryPlaceId: {} for user: {}",
-                request.getItineraryPlaceId(), user.getEmail());
+        logger.info("Adding interest with placeId: {} to itinerary: {} for user: {}",
+                request.getPlaceId(), itineraryId, user.getEmail());
 
         try {
-            AddInterestResponse response = interestService.addInterest(request, user);
+            AddInterestResponse response = interestService.addInterest(itineraryId, request, user);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             logger.error("Bad request: {}", e.getMessage());

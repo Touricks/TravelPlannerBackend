@@ -67,12 +67,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"itineraryPlaceId\": \"{{itineraryPlaceId}}\",\n    \"pinned\": false\n}"
+					"raw": "{\n    \"placeId\": \"{{placeId}}\",\n    \"pinned\": false\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/itineraries/interests",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
 					"host": ["{{baseUrl}}"],
-					"path": ["api", "itineraries", "interests"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
 				}
 			}
 		},
@@ -123,12 +123,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"itineraryPlaceId\": \"{{itineraryPlaceId2}}\",\n    \"pinned\": true\n}"
+					"raw": "{\n    \"placeId\": \"{{placeId2}}\",\n    \"pinned\": true\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/itineraries/interests",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
 					"host": ["{{baseUrl}}"],
-					"path": ["api", "itineraries", "interests"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
 				}
 			}
 		},
@@ -177,12 +177,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Itinerary_placeId\": \"{{itineraryId}}_{{samplePlaceId}}\",\n    \"pinned\": true\n}"
+					"raw": "{\n    \"placeId\": \"{{samplePlaceId}}\",\n    \"pinned\": true\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/itineraries/interests",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
 					"host": ["{{baseUrl}}"],
-					"path": ["api", "itineraries", "interests"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
 				}
 			}
 		},
@@ -225,12 +225,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"itineraryPlaceId\": \"invalid-uuid-format\",\n    \"pinned\": false\n}"
+					"raw": "{\n    \"placeId\": \"invalid-uuid-format\",\n    \"pinned\": false\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/itineraries/interests",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
 					"host": ["{{baseUrl}}"],
-					"path": ["api", "itineraries", "interests"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
 				}
 			}
 		},
@@ -263,12 +263,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"itineraryPlaceId\": \"{{itineraryPlaceId}}\",\n    \"pinned\": false\n}"
+					"raw": "{\n    \"placeId\": \"{{placeId}}\",\n    \"pinned\": false\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/itineraries/interests",
+					"raw": "{{baseUrl}}/api/itineraries/{{itineraryId}}/interests",
 					"host": ["{{baseUrl}}"],
-					"path": ["api", "itineraries", "interests"]
+					"path": ["api", "itineraries", "{{itineraryId}}", "interests"]
 				}
 			}
 		},
@@ -311,12 +311,12 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Itinerary_placeId\": \"{{nonexistentItineraryId}}_{{samplePlaceId}}\",\n    \"pinned\": false\n}"
+					"raw": "{\n    \"placeId\": \"{{samplePlaceId}}\",\n    \"pinned\": false\n}"
 				},
 				"url": {
-					"raw": "{{baseUrl}}/api/itineraries/interests",
+					"raw": "{{baseUrl}}/api/itineraries/{{nonexistentItineraryId}}/interests",
 					"host": ["{{baseUrl}}"],
-					"path": ["api", "itineraries", "interests"]
+					"path": ["api", "itineraries", "{{nonexistentItineraryId}}", "interests"]
 				}
 			}
 		}

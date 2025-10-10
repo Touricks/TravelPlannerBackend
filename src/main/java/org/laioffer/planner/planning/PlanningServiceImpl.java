@@ -19,6 +19,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -31,16 +32,19 @@ public class PlanningServiceImpl implements PlanningService {
     private final ItineraryPlaceRepository itineraryPlaceRepository;
     private final PlanningLLMService planningLLMService;
     private final org.laioffer.planner.Recommendation.PlaceMapper placeMapper;
+    private final org.laioffer.planner.repository.PlanRepository planRepository;
 
     public PlanningServiceImpl(
             ItineraryRepository itineraryRepository,
             ItineraryPlaceRepository itineraryPlaceRepository,
             PlanningLLMService planningLLMService,
-            org.laioffer.planner.Recommendation.PlaceMapper placeMapper) {
+            org.laioffer.planner.Recommendation.PlaceMapper placeMapper,
+            org.laioffer.planner.repository.PlanRepository planRepository) {
         this.itineraryRepository = itineraryRepository;
         this.itineraryPlaceRepository = itineraryPlaceRepository;
         this.planningLLMService = planningLLMService;
         this.placeMapper = placeMapper;
+        this.planRepository = planRepository;
     }
 
     @Override
@@ -49,7 +53,7 @@ public class PlanningServiceImpl implements PlanningService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public PlanItineraryResponse generatePlan(UUID itineraryId, PlanItineraryRequest request) {
         // 1. Fetch the core itinerary information from the database.
         // If not found, this will throw an ItineraryNotFoundException.
@@ -111,7 +115,12 @@ public class PlanningServiceImpl implements PlanningService {
         }
 
         // 6. Process the AI response and format it into PlanItineraryResponse
-        return buildPlanResponse(itineraryId, aiResponse);
+        PlanItineraryResponse planResponse = buildPlanResponse(itineraryId, aiResponse);
+
+        // 7. Save the generated plan to database
+        savePlan(itineraryId, planResponse);
+
+        return planResponse;
     }
 
     /**
@@ -201,5 +210,177 @@ public class PlanningServiceImpl implements PlanningService {
         }
 
         return stop;
+    }
+
+    @Override
+    @Transactional
+    public PlanItineraryResponse savePlan(UUID itineraryId, PlanItineraryResponse plan) {
+        // Fetch the itinerary
+        ItineraryEntity itinerary = itineraryRepository.findById(itineraryId)
+                .orElseThrow(() -> new ItineraryNotFoundException("Itinerary with id " + itineraryId + " not found."));
+
+        logger.info("Saving plan for itinerary {}", itineraryId);
+
+        // Convert PlanItineraryResponse to JSON Map
+        Map<String, Object> planData = convertPlanToMap(plan);
+
+        // Get next version number
+        Integer nextVersion = planRepository.findMaxVersionByItineraryId(itineraryId) + 1;
+
+        // Deactivate all existing plans for this itinerary
+        planRepository.deactivateAllPlansByItineraryId(itineraryId);
+
+        // Create and save new plan entity
+        org.laioffer.planner.entity.PlanEntity planEntity = new org.laioffer.planner.entity.PlanEntity(
+                itinerary, planData, nextVersion
+        );
+        planRepository.save(planEntity);
+
+        logger.info("Plan saved successfully for itinerary {} with version {}", itineraryId, nextVersion);
+
+        return plan;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.Optional<PlanItineraryResponse> getActivePlan(UUID itineraryId) {
+        logger.info("Retrieving active plan for itinerary {}", itineraryId);
+
+        return planRepository.findByItineraryIdAndIsActiveTrue(itineraryId)
+                .map(planEntity -> convertMapToPlan(planEntity.getPlanData(), itineraryId));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<PlanItineraryResponse> getPlanHistory(UUID itineraryId) {
+        logger.info("Retrieving plan history for itinerary {}", itineraryId);
+
+        return planRepository.findAllByItineraryIdOrderByCreatedAtDesc(itineraryId).stream()
+                .map(planEntity -> convertMapToPlan(planEntity.getPlanData(), itineraryId))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Convert PlanItineraryResponse to Map for JSON storage
+     */
+    private Map<String, Object> convertPlanToMap(PlanItineraryResponse plan) {
+        Map<String, Object> planMap = new java.util.HashMap<>();
+        planMap.put("itineraryId", plan.getItineraryId().toString());
+        planMap.put("days", plan.getDays());
+        if (plan.getWarnings() != null) {
+            planMap.put("warnings", plan.getWarnings());
+        }
+        return planMap;
+    }
+
+    /**
+     * Convert Map from JSON storage to PlanItineraryResponse
+     */
+    private PlanItineraryResponse convertMapToPlan(Map<String, Object> planData, UUID itineraryId) {
+        PlanItineraryResponse response = new PlanItineraryResponse();
+        response.setItineraryId(itineraryId);
+
+        // Convert days
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> daysData = (List<Map<String, Object>>) planData.get("days");
+        if (daysData != null) {
+            List<PlannedDay> days = daysData.stream()
+                    .map(this::convertMapToPlannedDay)
+                    .collect(Collectors.toList());
+            response.setDays(days);
+        }
+
+        // Convert warnings if present
+        if (planData.containsKey("warnings")) {
+            @SuppressWarnings("unchecked")
+            List<org.laioffer.planner.model.common.ApiError> warnings =
+                (List<org.laioffer.planner.model.common.ApiError>) planData.get("warnings");
+            response.setWarnings(warnings);
+        }
+
+        return response;
+    }
+
+    /**
+     * Convert Map to PlannedDay
+     */
+    private PlannedDay convertMapToPlannedDay(Map<String, Object> dayData) {
+        PlannedDay day = new PlannedDay();
+        day.setDate((String) dayData.get("date"));
+
+        @SuppressWarnings("unchecked")
+        List<Map<String, Object>> stopsData = (List<Map<String, Object>>) dayData.get("stops");
+        if (stopsData != null) {
+            List<PlannedStop> stops = stopsData.stream()
+                    .map(this::convertMapToPlannedStop)
+                    .collect(Collectors.toList());
+            day.setStops(stops);
+        }
+
+        return day;
+    }
+
+    /**
+     * Convert Map to PlannedStop
+     */
+    private PlannedStop convertMapToPlannedStop(Map<String, Object> stopData) {
+        PlannedStop stop = new PlannedStop();
+
+        if (stopData.get("order") != null) {
+            stop.setOrder(((Number) stopData.get("order")).intValue());
+        }
+        stop.setArrivalLocal((String) stopData.get("arrivalLocal"));
+        stop.setDepartLocal((String) stopData.get("departLocal"));
+        if (stopData.get("stayMinutes") != null) {
+            stop.setStayMinutes(((Number) stopData.get("stayMinutes")).intValue());
+        }
+        stop.setNote((String) stopData.get("note"));
+
+        // Convert place data if present
+        @SuppressWarnings("unchecked")
+        Map<String, Object> placeData = (Map<String, Object>) stopData.get("place");
+        if (placeData != null) {
+            org.laioffer.planner.model.place.PlaceDTO placeDTO = convertMapToPlaceDTO(placeData);
+            stop.setPlace(placeDTO);
+        }
+
+        return stop;
+    }
+
+    /**
+     * Convert Map to PlaceDTO
+     */
+    private org.laioffer.planner.model.place.PlaceDTO convertMapToPlaceDTO(Map<String, Object> placeData) {
+        org.laioffer.planner.model.place.PlaceDTO placeDTO = new org.laioffer.planner.model.place.PlaceDTO();
+
+        if (placeData.get("id") != null) {
+            placeDTO.setId(UUID.fromString((String) placeData.get("id")));
+        }
+        placeDTO.setName((String) placeData.get("name"));
+        placeDTO.setAddress((String) placeData.get("address"));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> locationData = (Map<String, Object>) placeData.get("location");
+        if (locationData != null) {
+            org.laioffer.planner.model.common.GeoPoint location = new org.laioffer.planner.model.common.GeoPoint(
+                    ((Number) locationData.get("lat")).doubleValue(),
+                    ((Number) locationData.get("lng")).doubleValue()
+            );
+            placeDTO.setLocation(location);
+        }
+
+        placeDTO.setDescription((String) placeData.get("description"));
+        placeDTO.setImageUrl((String) placeData.get("imageUrl"));
+
+        if (placeData.get("itineraryPlaceRecordId") != null) {
+            placeDTO.setItineraryPlaceRecordId(UUID.fromString((String) placeData.get("itineraryPlaceRecordId")));
+        }
+
+        if (placeData.get("pinned") != null) {
+            placeDTO.setPinned((Boolean) placeData.get("pinned"));
+        }
+        placeDTO.setNote((String) placeData.get("note"));
+
+        return placeDTO;
     }
 }
