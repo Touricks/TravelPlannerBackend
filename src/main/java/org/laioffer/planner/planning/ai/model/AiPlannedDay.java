@@ -1,5 +1,6 @@
 package org.laioffer.planner.planning.ai.model;
 
+import dev.langchain4j.model.output.structured.Description;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -9,8 +10,13 @@ import java.util.List;
  */
 public class AiPlannedDay {
 
+    @Description("Date of this day in YYYY-MM-DD format")
     private LocalDate date;
+
+    @Description("Brief summary of the day's activities and theme")
     private String summary;
+
+    @Description("List of stops/places to visit on this day in chronological order")
     private List<AiPlannedStop> stops;
 
     // Constructors

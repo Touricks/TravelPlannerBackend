@@ -1,5 +1,6 @@
 package org.laioffer.planner.planning.ai.model;
 
+import dev.langchain4j.model.output.structured.Description;
 import java.util.List;
 
 /**
@@ -8,7 +9,10 @@ import java.util.List;
  */
 public class AiPlanResponse {
 
+    @Description("List of planned days in chronological order")
     private List<AiPlannedDay> days;
+
+    @Description("Brief summary of the entire trip itinerary")
     private String summary;
 
     // Constructors

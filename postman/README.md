@@ -158,3 +158,4 @@ When adding new endpoints:
 2. Update this README with new endpoint documentation
 3. Add any new environment variables to the environment file
 4. Ensure tests include both success and error scenarios
+

@@ -1,5 +1,6 @@
 package org.laioffer.planner.planning.ai.model;
 
+import dev.langchain4j.model.output.structured.Description;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -9,13 +10,28 @@ import java.util.UUID;
  */
 public class AiPlannedStop {
 
+    @Description("UUID of the place from the interested places list - MUST match exactly")
     private UUID placeId;
+
+    @Description("Name of the place")
     private String placeName;
+
+    @Description("Arrival time at this place in HH:mm format")
     private LocalTime arrivalTime;
+
+    @Description("Departure time from this place in HH:mm format")
     private LocalTime departureTime;
+
+    @Description("Duration of visit in minutes")
     private Integer durationMinutes;
+
+    @Description("Description of what to do at this place")
     private String activity;
+
+    @Description("Transportation mode to next location (e.g., walking, metro, bus, taxi)")
     private String transportMode;
+
+    @Description("Transportation duration to next location in minutes")
     private Integer transportDurationMinutes;
 
     // Constructors

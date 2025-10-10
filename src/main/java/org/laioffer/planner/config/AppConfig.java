@@ -50,11 +50,10 @@ public class AppConfig {
                     .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
                     .requestMatchers(HttpMethod.GET, "/", "/index.html", "/*.json", "/*.png",
                     "/static/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password", "/api/itineraries/interests","/logout").permitAll()
-                    // Temporarily allow testing of Recommendations, Planning, and Interest APIs without authentication
-                    .requestMatchers("/api/v1/itineraries/*/recommendations/**").permitAll()
-                    .requestMatchers("/v1/itineraries/*/plan").permitAll()
-                    .requestMatchers("/api/itineraries/interests/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register", "/api/auth/forgot-password", "/api/auth/reset-password", "/logout").permitAll()
+                    // Temporarily allow testing of Recommendations and Interest APIs without authentication
+                    .requestMatchers(HttpMethod.GET,"/api/itineraries/*/recommendations").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/itineraries/interests").permitAll()
                     .anyRequest().authenticated()
         )
             .sessionManagement(session -> 

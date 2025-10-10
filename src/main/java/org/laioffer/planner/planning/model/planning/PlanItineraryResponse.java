@@ -1,4 +1,4 @@
-package org.laioffer.planner.Planning.model.planning;
+package org.laioffer.planner.planning.model.planning;
 
 import org.laioffer.planner.model.common.ApiError;
 

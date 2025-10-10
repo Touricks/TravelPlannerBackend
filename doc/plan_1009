@@ -1,0 +1,64 @@
+ Planning Module Refactoring Plan                                                                                                                                                   │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 1: Critical Security Fixes ⚠️                                                                                                                                                │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Add @AuthenticationPrincipal UserEntity user to PlanningController                                                                                                              │ │
+│ │ 2. Implement ownership verification (isItineraryOwnedByUser())                                                                                                                     │ │
+│ │ 3. Update AppConfig to require authentication for planning endpoints                                                                                                               │ │
+│ │ 4. Return 403 Forbidden for unauthorized access                                                                                                                                    │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 2: Standardize AI Integration 🤖                                                                                                                                             │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Option A (Recommended): Migrate to LangChain4j                                                                                                                                     │ │
+│ │ 1. Create PlanningAiService with @AiService annotation                                                                                                                             │ │
+│ │ 2. Define Mustache templates for prompts                                                                                                                                           │ │
+│ │ 3. Remove McpAiClient and McpAiClientImpl                                                                                                                                          │ │
+│ │ 4. Add retry logic (3 attempts with exponential backoff)                                                                                                                           │ │
+│ │ 5. Reuse existing LangChain4j configuration                                                                                                                                        │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Option B: Keep RestTemplate + standardize                                                                                                                                          │ │
+│ │ 1. Add timeout configuration                                                                                                                                                       │ │
+│ │ 2. Add retry mechanism                                                                                                                                                             │ │
+│ │ 3. Add circuit breaker                                                                                                                                                             │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 3: Error Handling Standardization 🛡                                                                                                                                         │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Create GlobalExceptionHandler with @ControllerAdvice                                                                                                                            │ │
+│ │ 2. Handle all exceptions with proper HTTP status codes (404, 400, 403, 503, 500)                                                                                                   │ │
+│ │ 3. Return consistent ErrorResponse structure                                                                                                                                       │ │
+│ │ 4. Add comprehensive logging                                                                                                                                                       │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 4: Complete Response Data 📊                                                                                                                                                 │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Inject PlaceMapper from Recommendation module                                                                                                                                   │ │
+│ │ 2. Replace manual PlaceDTO construction with placeMapper.toItineraryPlaceDTO()                                                                                                     │ │
+│ │ 3. Add @Transactional(readOnly = true) to prevent lazy loading issues                                                                                                              │ │
+│ │ 4. Ensure PlaceDTO is fully populated in responses                                                                                                                                 │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 5: Fix Architectural Inconsistencies 🏗                                                                                                                                      │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Fix endpoint path: /api/itineraries/{id}/plan (add leading slash)                                                                                                               │ │
+│ │ 2. Optional: Rename packages to lowercase (Recommendation → recommendation, Interest → interest)                                                                                   │ │
+│ │ 3. Organize DTOs consistently                                                                                                                                                      │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 6: Add Logging 📝                                                                                                                                                            │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Add structured logging to PlanningServiceImpl (debug, info, error levels)                                                                                                       │ │
+│ │ 2. Add request/response logging to PlanningController                                                                                                                              │ │
+│ │ 3. Log AI call timing and errors                                                                                                                                                   │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 7: Testing ✅                                                                                                                                                                 │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Integration tests: auth, ownership, valid/invalid requests                                                                                                                      │ │
+│ │ 2. Cross-module tests: itinerary → recommendations → interests → planning flow                                                                                                     │ │
+│ │ 3. Performance tests with large datasets                                                                                                                                           │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Phase 8: Documentation 📚                                                                                                                                                          │ │
+│ │                                                                                                                                                                                    │ │
+│ │ 1. Update PLANNING_MODULE.md with security and error handling                                                                                                                      │ │
+│ │ 2. Add API documentation with examples                                                                                                                                             │ │
+│ │ 3. Create INTEGRATION.md for cross-module workflows                                                                                                                                │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Estimated Effort: 19-29 hours (2.5-4 days)                                                                                                                                         │ │
+│ │                                                                                                                                                                                    │ │
+│ │ Key Decision: Choose AI integration approach (LangChain4j recommended for consistency)

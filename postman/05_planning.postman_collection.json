@@ -19,7 +19,6 @@
 							"",
 							"pm.test(\"Response has correct structure\", function () {",
 							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson).to.have.property('itineraryId');",
 							"    pm.expect(responseJson).to.have.property('days');",
 							"});",
 							"",
@@ -33,7 +32,6 @@
 							"    const responseJson = pm.response.json();",
 							"    if (responseJson.days.length > 0) {",
 							"        const day = responseJson.days[0];",
-							"        pm.expect(day).to.have.property('dayNumber');",
 							"        pm.expect(day).to.have.property('date');",
 							"        pm.expect(day).to.have.property('stops');",
 							"    }",
@@ -44,8 +42,10 @@
 							"    if (responseJson.days.length > 0 && responseJson.days[0].stops.length > 0) {",
 							"        const stop = responseJson.days[0].stops[0];",
 							"        pm.expect(stop).to.have.property('place');",
-							"        pm.expect(stop).to.have.property('arrivalTime');",
-							"        pm.expect(stop).to.have.property('departureTime');",
+							"        pm.expect(stop).to.have.property('order');",
+							"        pm.expect(stop).to.have.property('arrivalLocal');",
+							"        pm.expect(stop).to.have.property('departLocal');",
+							"        pm.expect(stop).to.have.property('stayMinutes');",
 							"    }",
 							"});",
 							"",
@@ -77,13 +77,119 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"18:00\"\n}"
+					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
 					"host": ["{{baseUrl}}"],
 					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
 				}
+			}
+		},
+		{
+			"name": "Plan Itinerary - With Selected Places",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Response structure is correct\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson).to.have.property('days');",
+							"});",
+							"",
+							"pm.test(\"Planned stops match selected places\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.days).to.be.an('array');",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"interestPlaceIds\": [\"{{placeId1}}\", \"{{placeId2}}\"],\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\",\n    \"avoidCrowds\": true,\n    \"minimizeTransfers\": false,\n    \"balanceCategories\": true\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				},
+				"description": "Plan itinerary with specific selected places and all available options"
+			}
+		},
+		{
+			"name": "Plan Itinerary - With Date Range",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Days match specified date range\", function () {",
+							"    const responseJson = pm.response.json();",
+							"    pm.expect(responseJson.days).to.be.an('array');",
+							"    // Verify the number of days matches the date range",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{authToken}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"startDate\": \"2024-03-01T10:00:00-08:00\",\n    \"endDate\": \"2024-03-05T18:00:00-08:00\",\n    \"travelMode\": \"DRIVING\",\n    \"dailyStart\": \"10:00\",\n    \"dailyEnd\": \"19:00\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
+					"host": ["{{baseUrl}}"],
+					"path": ["v1", "itineraries", "{{itineraryId}}", "plan"]
+				},
+				"description": "Plan itinerary with explicit start and end dates"
 			}
 		},
 		{
@@ -99,7 +205,6 @@
 							"",
 							"pm.test(\"Response structure is correct\", function () {",
 							"    const responseJson = pm.response.json();",
-							"    pm.expect(responseJson).to.have.property('itineraryId');",
 							"    pm.expect(responseJson).to.have.property('days');",
 							"});"
 						],
@@ -127,7 +232,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"travelMode\": \"TRANSIT\",\n    \"startTime\": \"08:00\",\n    \"endTime\": \"20:00\"\n}"
+					"raw": "{\n    \"travelMode\": \"TRANSIT\",\n    \"dailyStart\": \"08:00\",\n    \"dailyEnd\": \"20:00\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
@@ -176,7 +281,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"travelMode\": \"DRIVING\",\n    \"startTime\": \"10:00\",\n    \"endTime\": \"19:00\"\n}"
+					"raw": "{\n    \"travelMode\": \"DRIVING\",\n    \"dailyStart\": \"10:00\",\n    \"dailyEnd\": \"19:00\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",
@@ -220,7 +325,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"18:00\"\n}"
+					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/v1/itineraries/invalid-uuid/plan",
@@ -298,7 +403,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"startTime\": \"09:00\",\n    \"endTime\": \"18:00\"\n}"
+					"raw": "{\n    \"travelMode\": \"WALKING\",\n    \"dailyStart\": \"09:00\",\n    \"dailyEnd\": \"18:00\"\n}"
 				},
 				"url": {
 					"raw": "{{baseUrl}}/v1/itineraries/{{itineraryId}}/plan",

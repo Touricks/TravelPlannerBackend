@@ -25,49 +25,71 @@ public class PlaceMapper {
         if (itineraryPlace == null) {
             return null;
         }
-        
+
         PlaceEntity place = itineraryPlace.getPlace();
         if (place == null) {
-            return null;
+            // Still try to build a minimal DTO from itineraryPlace denormalized data
+            PlaceDTO dto = new PlaceDTO();
+            dto.setId(itineraryPlace.getPlaceId()); // Use placeId from itineraryPlace
+            dto.setName(itineraryPlace.getName() != null ? itineraryPlace.getName() : "Unknown Place");
+            dto.setDescription(itineraryPlace.getDescription());
+            dto.setAddress("Address not available");
+
+            // Set default location to avoid null pointer
+            dto.setLocation(new GeoPoint(0.0, 0.0));
+
+            // Itinerary-specific fields
+            dto.setItineraryPlaceRecordId(itineraryPlace.getId());
+            dto.setPinned(itineraryPlace.isPinned());
+            dto.setNote(itineraryPlace.getNote());
+            dto.setAddedAt(itineraryPlace.getAddedAt());
+
+            return dto;
         }
+
         PlaceDTO dto = new PlaceDTO();
-        
-        // Basic place fields
+
+        // Basic place fields with null safety
         dto.setId(place.getId());
-        dto.setAddress(place.getAddress());
+        dto.setAddress(place.getAddress() != null ? place.getAddress() : "Address not available");
         dto.setImageUrl(place.getImageUrl());
-        
-        // Use denormalized fields from ItineraryPlaceEntity
-        dto.setName(itineraryPlace.getName());
-        dto.setDescription(itineraryPlace.getDescription());
-        
+
+        // Use denormalized fields from ItineraryPlaceEntity with fallback to place entity
+        dto.setName(itineraryPlace.getName() != null ? itineraryPlace.getName() :
+                    (place.getName() != null ? place.getName() : "Unknown Place"));
+        dto.setDescription(itineraryPlace.getDescription() != null ? itineraryPlace.getDescription() :
+                          place.getDescription());
+
         // Itinerary-specific fields
         dto.setItineraryPlaceRecordId(itineraryPlace.getId());
         dto.setPinned(itineraryPlace.isPinned());
         dto.setNote(itineraryPlace.getNote());
         dto.setAddedAt(itineraryPlace.getAddedAt());
-        
-        // Convert coordinates to GeoPoint
+
+        // Convert coordinates to GeoPoint with null safety
         if (place.getLatitude() != null && place.getLongitude() != null) {
             GeoPoint location = new GeoPoint(
                 place.getLatitude().doubleValue(),
                 place.getLongitude().doubleValue()
             );
             dto.setLocation(location);
+        } else {
+            // Set default location if coordinates are missing
+            dto.setLocation(new GeoPoint(0.0, 0.0));
         }
-        
+
         // Convert contact info from JSONB
         ContactDTO contact = extractContactInfo(place);
         if (contact != null) {
             dto.setContact(contact);
         }
-        
+
         // Convert opening hours from JSONB
         OpeningHoursDTO openingHours = extractOpeningHours(place);
         if (openingHours != null) {
             dto.setOpeningHours(openingHours);
         }
-        
+
         return dto;
     }
     

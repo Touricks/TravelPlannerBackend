@@ -1,5 +1,6 @@
 package org.laioffer.planner.model.itinerary;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.laioffer.planner.model.common.PageMeta;
 import org.laioffer.planner.model.place.PlaceDTO;
 
@@ -7,8 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 public class GetRecommendationsResponse {
+    @JsonProperty("itineraryId")
     private UUID itineraryId;
+
+    @JsonProperty("items")
     private List<PlaceDTO> items;
+
+    @JsonProperty("page")
     private PageMeta page;
 
     public GetRecommendationsResponse() {}

@@ -7,7 +7,9 @@ import org.laioffer.planner.model.itinerary.TravelMode;
 import org.laioffer.planner.model.common.TravelPace;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,11 +18,21 @@ import java.time.OffsetDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ItineraryController.class)
 class ItineraryControllerTest {
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public ItineraryService mockItineraryService() {
+            return mock(ItineraryService.class);
+        }
+    }
 
     @Autowired
     private MockMvc mockMvc;
@@ -28,7 +40,7 @@ class ItineraryControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @Autowired
     private ItineraryService itineraryService;
 
     @Test

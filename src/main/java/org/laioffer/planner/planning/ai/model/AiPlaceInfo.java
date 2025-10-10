@@ -10,13 +10,13 @@ import java.util.UUID;
 public class AiPlaceInfo {
 
     private UUID placeId;
-    private String name;
-    private String address;
-    private BigDecimal latitude;
-    private BigDecimal longitude;
-    private String description;
-    private boolean pinned;
-    private String note;
+    private String name = "";
+    private String address = "";
+    private BigDecimal latitude = BigDecimal.ZERO;
+    private BigDecimal longitude = BigDecimal.ZERO;
+    private String description = "";
+    private boolean pinned = false;
+    private String note = "";
 
     // Constructors
     public AiPlaceInfo() {}

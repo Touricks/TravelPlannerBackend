@@ -62,8 +62,7 @@ langchain4j:
     chat-model:
       api-key: ${OPENAI_API_KEY}
       model-name: ${OPENAI_MODEL}
-      temperature: 0.7
-      max-tokens: 4000
+      max_completion_tokens: 4000
       timeout: 30s
       max-retries: 3
       log-requests: true

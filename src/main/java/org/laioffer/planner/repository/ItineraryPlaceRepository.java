@@ -29,6 +29,11 @@ public interface ItineraryPlaceRepository extends JpaRepository<ItineraryPlaceEn
      * Check if a specific place is already added to an itinerary
      */
     boolean existsByItineraryIdAndPlaceId(UUID itineraryId, UUID placeId);
+
+    /**
+     * Find a specific place in an itinerary by itineraryId and placeId
+     */
+    Optional<ItineraryPlaceEntity> findByItineraryIdAndPlaceId(UUID itineraryId, UUID placeId);
     
     /**
      * Find places by itinerary and pinned status

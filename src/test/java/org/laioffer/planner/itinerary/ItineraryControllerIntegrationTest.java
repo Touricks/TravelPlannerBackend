@@ -11,7 +11,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -21,6 +23,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +34,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 class ItineraryControllerIntegrationTest {
 
+    @TestConfiguration
+    static class TestConfig {
+        // LangChain4j will auto-create POIRecommendationService with api-key from properties
+        // Our @Primary beans will override the auto-wired dependencies
+
+        @Bean
+        @Primary
+        public LangChain4jLLMService testLLMService(POIRecommendationService poiRecommendationService) throws Exception {
+            LangChain4jLLMService mock = mock(LangChain4jLLMService.class);
+            // Pre-configure mock behavior
+            Mockito.when(mock.generatePOIRecommendations(Mockito.any(), Mockito.anyInt()))
+                    .thenReturn(List.of());
+            return mock;
+        }
+
+        @Bean
+        @Primary
+        public POIService testPOIService() throws Exception {
+            POIService mock = mock(POIService.class);
+            // Pre-configure mock behavior
+            Mockito.when(mock.createAndAddPlacesToItinerary(Mockito.any(), Mockito.any()))
+                    .thenReturn(List.of());
+            return mock;
+        }
+    }
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -39,15 +68,6 @@ class ItineraryControllerIntegrationTest {
 
     @Autowired
     private ItineraryRepository itineraryRepository;
-
-    @MockBean
-    private LangChain4jLLMService llmService;
-
-    @MockBean
-    private POIService poiService;
-
-    @MockBean
-    private POIRecommendationService poiRecommendationService;
 
     @Test
     @WithMockUser(username = "test@example.com")
@@ -63,11 +83,7 @@ class ItineraryControllerIntegrationTest {
 
         String requestJson = objectMapper.writeValueAsString(request);
 
-        // Mock the external services to avoid external calls
-        Mockito.when(llmService.generatePOIRecommendations(Mockito.any(), Mockito.anyInt()))
-                .thenReturn(List.of());
-        Mockito.when(poiService.createAndAddPlacesToItinerary(Mockito.any(), Mockito.any()))
-                .thenReturn(List.of());
+        // Mock behavior is configured in TestConfig
 
         // When
         mockMvc.perform(post("/api/itineraries")

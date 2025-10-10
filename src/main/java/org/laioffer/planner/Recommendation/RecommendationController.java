@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/v1/itineraries")
+@RequestMapping("/api/itineraries")
 @CrossOrigin(origins = "*") // Configure appropriately for production
 public class RecommendationController {
     
