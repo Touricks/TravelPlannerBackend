@@ -1,8 +1,8 @@
 package org.laioffer.planner.planning;
 
 import org.laioffer.planner.entity.UserEntity;
-import org.laioffer.planner.planning.model.planning.PlanItineraryRequest;
-import org.laioffer.planner.planning.model.planning.PlanItineraryResponse;
+import org.laioffer.planner.model.planning.PlanItineraryRequest;
+import org.laioffer.planner.model.planning.PlanItineraryResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;

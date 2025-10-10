@@ -1,7 +1,7 @@
 package org.laioffer.planner.planning;
 
-import org.laioffer.planner.planning.model.planning.PlanItineraryRequest;
-import org.laioffer.planner.planning.model.planning.PlanItineraryResponse;
+import org.laioffer.planner.model.planning.PlanItineraryRequest;
+import org.laioffer.planner.model.planning.PlanItineraryResponse;
 
 import java.util.UUID;
 

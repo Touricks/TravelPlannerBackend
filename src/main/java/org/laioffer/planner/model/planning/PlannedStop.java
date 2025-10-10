@@ -1,4 +1,4 @@
-package org.laioffer.planner.planning.model.planning;
+package org.laioffer.planner.model.planning;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import org.laioffer.planner.model.place.PlaceDTO;

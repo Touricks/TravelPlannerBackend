@@ -1,9 +1,9 @@
 package org.laioffer.planner.planning;
 
-import org.laioffer.planner.planning.model.planning.PlanItineraryRequest;
-import org.laioffer.planner.planning.model.planning.PlanItineraryResponse;
-import org.laioffer.planner.planning.model.planning.PlannedDay;
-import org.laioffer.planner.planning.model.planning.PlannedStop;
+import org.laioffer.planner.model.planning.PlanItineraryRequest;
+import org.laioffer.planner.model.planning.PlanItineraryResponse;
+import org.laioffer.planner.model.planning.PlannedDay;
+import org.laioffer.planner.model.planning.PlannedStop;
 import org.laioffer.planner.entity.ItineraryEntity;
 import org.laioffer.planner.entity.ItineraryPlaceEntity;
 import org.laioffer.planner.planning.ai.model.*;
