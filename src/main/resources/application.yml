@@ -7,9 +7,9 @@ spring:
       fail-on-unknown-properties: false
 
   datasource:
-    url: jdbc:postgresql://${DATABASE_URL}:${DATABASE_PORT}/TravelPlanner
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: jdbc:postgresql://127.0.0.1:5433/TravelPlanner
+    username: postgres
+    password: secret
     driver-class-name: org.postgresql.Driver
 
   mail:

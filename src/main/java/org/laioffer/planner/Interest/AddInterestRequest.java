@@ -7,7 +7,7 @@ public class AddInterestRequest {
     @NotNull(message = "placeId is required")
     private UUID placeId;
 
-    private boolean pinned = true;
+    private boolean pinned = false;
 
     public AddInterestRequest() {}
 

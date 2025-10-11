@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java:*)",
+      "Bash(echo:*)"
+    ]
+  },
+  "enabledMcpjsonServers": [
+    "postgres",
+    "context7",
+    "playwright"
+  ],
+  "enableAllProjectMcpServers": true
+}
