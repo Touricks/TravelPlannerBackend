@@ -1,6 +1,7 @@
 package org.laioffer.planner.config;
 
 import org.laioffer.planner.user.security.JwtAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,9 @@ import java.time.Clock;
 @Configuration
 @EnableMethodSecurity(prePostEnabled = true)
 public class AppConfig {
+
+  @Value("${app.cors.allowed-origins}")
+  private String allowedOrigins;
 
   @Bean
   PasswordEncoder passwordEncoder() {
@@ -67,11 +71,11 @@ public class AppConfig {
   public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration configuration = new CorsConfiguration();
 
-    // Allow specific origins - adjust for production
-    configuration.addAllowedOrigin("http://localhost:3000");
-    configuration.addAllowedOrigin("http://localhost:5173");
-    configuration.addAllowedOrigin("http://127.0.0.1:3000");
-    configuration.addAllowedOrigin("http://127.0.0.1:5173");
+    // Allow origins from configuration (environment variable)
+    String[] origins = allowedOrigins.split(",");
+    for (String origin : origins) {
+      configuration.addAllowedOrigin(origin.trim());
+    }
 
     // Allow all HTTP methods
     configuration.addAllowedMethod("*");

@@ -9,7 +9,6 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/itineraries")
-@CrossOrigin(origins = "*") // Configure appropriately for production
 public class RecommendationController {
     
     private final RecommendationService recommendationService;
