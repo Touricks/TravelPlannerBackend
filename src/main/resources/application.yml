@@ -62,8 +62,8 @@ langchain4j:
     chat-model:
       api-key: ${OPENAI_API_KEY}
       model-name: ${OPENAI_MODEL}
-      max_completion_tokens: 4000
-      timeout: 30s
+      max_completion_tokens: 16000
+      timeout: 90s
       max-retries: 3
       log-requests: true
       log-responses: true
