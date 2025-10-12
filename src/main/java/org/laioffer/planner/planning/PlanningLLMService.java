@@ -84,6 +84,15 @@ public class PlanningLLMService {
         StringBuilder prompt = new StringBuilder();
 
         prompt.append("Create an optimized travel itinerary for ").append(destinationCity).append(".\n\n");
+
+        prompt.append("CRITICAL CONSTRAINT:\n");
+        prompt.append("- You MUST ONLY schedule the ").append(interestedPlaces.size()).append(" places listed below\n");
+        prompt.append("- DO NOT add, suggest, or create any places not in this list\n");
+        prompt.append("- Every placeId in your response MUST exactly match a placeId from the list\n");
+        prompt.append("- IMPORTANT: Each place can ONLY be scheduled ONCE in the entire itinerary - NO DUPLICATES\n");
+        prompt.append("- DO NOT schedule the same placeId multiple times across different days\n");
+        prompt.append("- If there's extra time, suggest \"free time\", \"lunch break\", or \"rest\" instead of new places\n\n");
+
         prompt.append("Trip Details:\n");
         prompt.append("- Destination: ").append(destinationCity).append("\n");
         prompt.append("- Start Date: ").append(startDate).append("\n");
@@ -121,13 +130,16 @@ public class PlanningLLMService {
         }
 
         prompt.append("Requirements:\n");
-        prompt.append("1. Create a day-by-day schedule from ").append(startDate).append(" to ").append(endDate).append("\n");
-        prompt.append("2. Prioritize all pinned places - they MUST be included\n");
-        prompt.append("3. Optimize the route to minimize backtracking\n");
-        prompt.append("4. Respect the daily time window (").append(dailyStart).append(" - ").append(dailyEnd).append(")\n");
-        prompt.append("5. Allocate realistic visit durations for each place\n");
-        prompt.append("6. Include transportation time and mode between stops\n");
-        prompt.append("7. Ensure the schedule is achievable and not overly packed\n\n");
+        prompt.append("1. ONLY use the ").append(interestedPlaces.size()).append(" places listed above - NO additional places allowed\n");
+        prompt.append("2. Each place can ONLY appear ONCE in the entire itinerary - do NOT schedule duplicates\n");
+        prompt.append("3. Create a day-by-day schedule from ").append(startDate).append(" to ").append(endDate).append("\n");
+        prompt.append("4. Prioritize all pinned places - they MUST be included\n");
+        prompt.append("5. Optimize the route to minimize backtracking\n");
+        prompt.append("6. Respect the daily time window (").append(dailyStart).append(" - ").append(dailyEnd).append(")\n");
+        prompt.append("7. Allocate realistic visit durations for each place\n");
+        prompt.append("8. Include transportation time and mode between stops\n");
+        prompt.append("9. Ensure the schedule is achievable and not overly packed\n");
+        prompt.append("10. If you cannot fit all places, that's OK - do not add unlisted places to fill time\n\n");
 
         prompt.append("For each stop, provide:\n");
         prompt.append("- Exact place ID (UUID) from the list above\n");
