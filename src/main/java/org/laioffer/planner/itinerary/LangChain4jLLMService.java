@@ -100,7 +100,11 @@ public class LangChain4jLLMService {
         if (preferredCategories == null) {
             preferredCategories = new ArrayList<>();  // Ensure non-null for template
         }
-        String additionalPreferences = itinerary.getAdditionalPreferences() != null ? itinerary.getAdditionalPreferences() : "";
+        // Convert List to comma-separated string for Mustache template
+        String preferredCategoriesStr = preferredCategories.isEmpty() ? "Any" : String.join(", ", preferredCategories);
+        String additionalPreferences = (itinerary.getAdditionalPreferences() != null && !itinerary.getAdditionalPreferences().trim().isEmpty())
+            ? itinerary.getAdditionalPreferences()
+            : "None";
 
         return poiRecommendationService.generatePOIRecommendations(
                 itinerary.getDestinationCity(),
@@ -115,7 +119,7 @@ public class LangChain4jLLMService {
                 hasChildren,
                 hasElderly,
                 preferPopularAttractions,
-                preferredCategories,
+                preferredCategoriesStr,
                 additionalPreferences
         );
     }

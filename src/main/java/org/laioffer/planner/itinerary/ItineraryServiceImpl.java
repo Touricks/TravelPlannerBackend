@@ -29,8 +29,8 @@ import java.util.UUID;
 public class ItineraryServiceImpl implements ItineraryService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItineraryServiceImpl.class);
-    private static final int MAX_POI_COUNT = 4;
-    private static final int MAX_STAYING_DAYS = 2;
+    private static final int MAX_POI_COUNT = 15;
+    private static final int MAX_STAYING_DAYS = 7;
 
     private final ItineraryRepository itineraryRepository;
     private final LangChain4jLLMService llmService;
@@ -205,9 +205,9 @@ public class ItineraryServiceImpl implements ItineraryService {
 
     private int calculatePOICount(int stayingDays, TravelPace pace) {
         int poiPerDay = switch (pace) {
-            case RELAXED -> 1;
-            case MODERATE -> 2;
-            case PACKED -> 2;
+            case RELAXED -> 2;
+            case MODERATE -> 3;
+            case PACKED -> 5;
         };
         return Math.min(stayingDays * poiPerDay, MAX_POI_COUNT);
     }

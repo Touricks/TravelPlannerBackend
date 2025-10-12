@@ -46,10 +46,10 @@ public interface POIRecommendationService {
         - Activity intensity preference: {{activityIntensity}}
         - Group size: {{numberOfTravelers}} travelers
         - Prefer popular attractions: {{preferPopularAttractions}}
-        {{#hasChildren}}- Traveling with children: yes (prioritize family-friendly attractions){{/hasChildren}}
-        {{#hasElderly}}- Traveling with elderly: yes (prioritize accessible, low-intensity activities){{/hasElderly}}
-        {{#preferredCategories}}- Preferred category: {{.}}
-        {{/preferredCategories}}{{#additionalPreferences}}- Additional preferences: {{additionalPreferences}}{{/additionalPreferences}}
+        {{#hasChildren}}- Traveling with children: yes (prioritize family-friendly attractions)
+        {{/hasChildren}}{{#hasElderly}}- Traveling with elderly: yes (prioritize accessible, low-intensity activities)
+        {{/hasElderly}}- Preferred categories: {{preferredCategoriesStr}}
+        - Additional preferences: {{additionalPreferences}}
 
         Focus on attractions that are:
         - Suitable for the specified travel mode, pace, and activity level
@@ -76,7 +76,7 @@ public interface POIRecommendationService {
             @V("hasChildren") boolean hasChildren,
             @V("hasElderly") boolean hasElderly,
             @V("preferPopularAttractions") boolean preferPopularAttractions,
-            @V("preferredCategories") java.util.List<String> preferredCategories,
+            @V("preferredCategoriesStr") String preferredCategoriesStr,
             @V("additionalPreferences") String additionalPreferences
     );
     
