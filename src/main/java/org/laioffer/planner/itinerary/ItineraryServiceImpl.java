@@ -207,7 +207,7 @@ public class ItineraryServiceImpl implements ItineraryService {
         int poiPerDay = switch (pace) {
             case RELAXED -> 2;
             case MODERATE -> 3;
-            case PACKED -> 5;
+            case PACKED -> 4;
         };
         return Math.min(stayingDays * poiPerDay, MAX_POI_COUNT);
     }

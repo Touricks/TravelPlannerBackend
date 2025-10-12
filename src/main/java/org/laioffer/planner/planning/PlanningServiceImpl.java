@@ -63,17 +63,21 @@ public class PlanningServiceImpl implements PlanningService {
         logger.info("Generating plan for itinerary {} in {}", itineraryId, itinerary.getDestinationCity());
 
         // 2. Fetch the list of places the user is interested in.
-        // If the request specifies a list of places, use that. Otherwise, use all
-        // places previously added to the itinerary's interest list.
+        // If the request specifies a list of places, use that. Otherwise, use only
+        // pinned places (user-selected) from the itinerary's interest list.
         List<ItineraryPlaceEntity> interestedPlaces;
         if (CollectionUtils.isEmpty(request.getInterestPlaceIds())) {
-            interestedPlaces = itineraryPlaceRepository.findAllByItineraryId(itineraryId);
+            List<ItineraryPlaceEntity> allPlaces = itineraryPlaceRepository.findAllByItineraryId(itineraryId);
+            interestedPlaces = allPlaces.stream()
+                    .filter(ItineraryPlaceEntity::isPinned)
+                    .collect(Collectors.toList());
+            logger.debug("Filtered {} pinned places out of {} total places for planning",
+                    interestedPlaces.size(), allPlaces.size());
         } else {
             List<UUID> placeIds = request.getInterestPlaceIds().stream().map(UUID::fromString).toList();
             interestedPlaces = itineraryPlaceRepository.findAllByItineraryIdAndIdIn(itineraryId, placeIds);
+            logger.debug("Using {} explicitly specified places for planning", interestedPlaces.size());
         }
-
-        logger.debug("Found {} interested places for planning", interestedPlaces.size());
 
         // 3. Convert places to AI format
         List<AiPlaceInfo> aiPlaces = interestedPlaces.stream()
@@ -114,10 +118,13 @@ public class PlanningServiceImpl implements PlanningService {
             throw new RuntimeException("Failed to generate travel plan: " + e.getMessage(), e);
         }
 
-        // 6. Process the AI response and format it into PlanItineraryResponse
+        // 6. Validate and deduplicate the AI response to ensure no duplicate POIs
+        aiResponse = validateAndDeduplicatePlan(aiResponse);
+
+        // 7. Process the AI response and format it into PlanItineraryResponse
         PlanItineraryResponse planResponse = buildPlanResponse(itineraryId, aiResponse);
 
-        // 7. Save the generated plan to database
+        // 8. Save the generated plan to database
         savePlan(itineraryId, planResponse);
 
         return planResponse;
@@ -345,6 +352,61 @@ public class PlanningServiceImpl implements PlanningService {
         }
 
         return stop;
+    }
+
+    /**
+     * Validates the AI-generated plan and removes duplicate POIs.
+     * If the same placeId appears multiple times across different days,
+     * only the first occurrence is kept, and subsequent duplicates are removed.
+     *
+     * @param aiResponse the AI-generated plan response
+     * @return the validated and deduplicated plan response
+     */
+    private AiPlanResponse validateAndDeduplicatePlan(AiPlanResponse aiResponse) {
+        if (aiResponse == null || aiResponse.getDays() == null) {
+            return aiResponse;
+        }
+
+        java.util.Set<UUID> seenPlaceIds = new java.util.HashSet<>();
+        int totalRemovedDuplicates = 0;
+
+        for (AiPlannedDay day : aiResponse.getDays()) {
+            if (day.getStops() == null) {
+                continue;
+            }
+
+            List<AiPlannedStop> originalStops = new java.util.ArrayList<>(day.getStops());
+            List<AiPlannedStop> validStops = new java.util.ArrayList<>();
+
+            for (AiPlannedStop stop : originalStops) {
+                UUID placeId = stop.getPlaceId();
+
+                if (placeId == null) {
+                    // Keep stops without placeId (e.g., free time, breaks)
+                    validStops.add(stop);
+                } else if (!seenPlaceIds.contains(placeId)) {
+                    // First occurrence of this place - keep it
+                    seenPlaceIds.add(placeId);
+                    validStops.add(stop);
+                } else {
+                    // Duplicate detected - skip this stop
+                    totalRemovedDuplicates++;
+                    logger.warn("Duplicate POI detected and removed: placeId={}, placeName={}, date={}",
+                            placeId, stop.getPlaceName(), day.getDate());
+                }
+            }
+
+            // Update the day with deduplicated stops
+            day.setStops(validStops);
+        }
+
+        if (totalRemovedDuplicates > 0) {
+            logger.warn("Total {} duplicate POI(s) removed from the generated plan", totalRemovedDuplicates);
+        } else {
+            logger.info("Plan validation passed - no duplicate POIs found");
+        }
+
+        return aiResponse;
     }
 
     /**
