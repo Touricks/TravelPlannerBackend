@@ -39,3 +39,7 @@ toolbox
 
 ### Environment Variables ###
 .env
+
+### Documentation ###
+doc/
+AITripPlannerFE/

@@ -5,11 +5,15 @@ spring:
       write-dates-as-timestamps: false
     deserialization:
       fail-on-unknown-properties: false
-
+  cloud:
+    gcp:
+      sql:
+        instance-connection-name: ${GCP_SQL_INSTANCE_CONNECTION_NAME:null}
+        database-name: ${GCP_SQL_DATABASE_NAME:null}
   datasource:
-    url: jdbc:postgresql://${DATABASE_URL}:${DATABASE_PORT}/TravelPlanner
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
+    url: jdbc:postgresql://${DATABASE_URL:localhost}:${DATABASE_PORT:5434}/${DATABASE_NAME:TravelPlanner}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD:secret}
     driver-class-name: org.postgresql.Driver
 
   mail:
@@ -54,7 +58,10 @@ travelplanner:
     secret-key: ${JWT_SECRET_KEY}
 
 app:
-  base-url: ${APP_BASE_URL}
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173}
 
 # LangChain4j configuration
 langchain4j:

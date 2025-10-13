@@ -10,19 +10,19 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final String fromEmail;
-    private final String appBaseUrl;
+    private final String frontendBaseUrl;
 
     public EmailService(
             JavaMailSender mailSender,
             @Value("${spring.mail.username}") String fromEmail,
-            @Value("${app.base-url:http://localhost:8080}") String appBaseUrl) {
+            @Value("${app.frontend-url:http://localhost:3000}") String frontendBaseUrl) {
         this.mailSender = mailSender;
         this.fromEmail = fromEmail;
-        this.appBaseUrl = appBaseUrl;
+        this.frontendBaseUrl = frontendBaseUrl;
     }
 
     public void sendPasswordResetEmail(String toEmail, String resetToken) {
-        String resetLink = appBaseUrl + "/api/auth/reset-password?token=" + resetToken;
+        String resetLink = frontendBaseUrl + "/reset-password?token=" + resetToken;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromEmail);
