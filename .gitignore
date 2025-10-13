@@ -39,4 +39,6 @@ toolbox
 
 ### Environment Variables ###
 .env
-doc/PhaseII/postgresqlGcloudSetup.md
+
+### Documentation ###
+doc/
