@@ -29,7 +29,7 @@ import java.util.UUID;
 public class ItineraryServiceImpl implements ItineraryService {
 
     private static final Logger logger = LoggerFactory.getLogger(ItineraryServiceImpl.class);
-    private static final int MAX_POI_COUNT = 15;
+    private static final int MAX_POI_COUNT = 16;
     private static final int MAX_STAYING_DAYS = 7;
 
     private final ItineraryRepository itineraryRepository;
@@ -95,7 +95,13 @@ public class ItineraryServiceImpl implements ItineraryService {
         aiMetadata.put("generation_pending", true);
         itinerary.setAiMetadata(aiMetadata);
 
+        logger.info("🔍 DEBUG - Before saving to DB: travelPace={}, activityIntensity={}",
+                itinerary.getTravelPace(), itinerary.getActivityIntensity());
+
         ItineraryEntity savedItinerary = itineraryRepository.save(itinerary);
+
+        logger.info("🔍 DEBUG - After saving to DB: travelPace={}, activityIntensity={}",
+                savedItinerary.getTravelPace(), savedItinerary.getActivityIntensity());
 
         logger.info("Successfully created itinerary: {} for user: {}",
                 savedItinerary.getId(), user.getId());
@@ -160,6 +166,7 @@ public class ItineraryServiceImpl implements ItineraryService {
     }
 
     private void validateRequest(CreateItineraryRequest request) {
+        // Validate required core fields
         if (request.getDestinationCity() == null || request.getDestinationCity().trim().isEmpty()) {
             throw new IllegalArgumentException("Destination city is required");
         }
@@ -172,21 +179,25 @@ public class ItineraryServiceImpl implements ItineraryService {
             throw new IllegalArgumentException("Start date must be before end date");
         }
 
-        if (request.getBudgetLimitCents() == null) {
-            throw new IllegalArgumentException("Budget is required");
-        }
-
-        if (request.getBudgetLimitCents() < 0) {
-            throw new IllegalArgumentException("Budget cannot be negative");
-        }
-
+        // Apply defaults for optional fields instead of throwing exceptions
         if (request.getTravelPace() == null) {
-            throw new IllegalArgumentException("Travel pace is required");
+            logger.info("TravelPace not provided, using default: MODERATE");
+            request.setTravelPace(TravelPace.MODERATE);
         }
 
-        if (request.getNumberOfTravelers() != null && request.getNumberOfTravelers() <= 0) {
-            throw new IllegalArgumentException("Number of travelers must be positive");
+        if (request.getBudgetLimitCents() == null || request.getBudgetLimitCents() <= 0) {
+            logger.info("Budget not provided or invalid, using default: 200000 cents ($2000)");
+            request.setBudgetLimitCents(200000); // Default $2000
         }
+
+        if (request.getNumberOfTravelers() == null || request.getNumberOfTravelers() <= 0) {
+            logger.info("NumberOfTravelers not provided or invalid, using default: 1");
+            request.setNumberOfTravelers(1);
+        }
+
+        // Log when defaults are applied
+        logger.debug("Request validation complete. TravelPace: {}, Budget: {}, Travelers: {}",
+                request.getTravelPace(), request.getBudgetLimitCents(), request.getNumberOfTravelers());
     }
 
     private int calculateStayingDays(CreateItineraryRequest request) {
@@ -206,8 +217,8 @@ public class ItineraryServiceImpl implements ItineraryService {
     private int calculatePOICount(int stayingDays, TravelPace pace) {
         int poiPerDay = switch (pace) {
             case RELAXED -> 2;
-            case MODERATE -> 3;
-            case PACKED -> 4;
+            case MODERATE -> 4;
+            case PACKED -> 5;
         };
         return Math.min(stayingDays * poiPerDay, MAX_POI_COUNT);
     }

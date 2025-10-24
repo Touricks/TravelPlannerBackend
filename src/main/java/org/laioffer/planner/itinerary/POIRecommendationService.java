@@ -46,9 +46,13 @@ public interface POIRecommendationService {
         - Activity intensity preference: {{activityIntensity}}
         - Group size: {{numberOfTravelers}} travelers
         - Prefer popular attractions: {{preferPopularAttractions}}
-        {{#hasChildren}}- Traveling with children: yes (prioritize family-friendly attractions)
-        {{/hasChildren}}{{#hasElderly}}- Traveling with elderly: yes (prioritize accessible, low-intensity activities)
-        {{/hasElderly}}- Preferred categories: {{preferredCategoriesStr}}
+        {{#hasChildren}}
+        - Traveling with children: yes (prioritize family-friendly attractions)
+        {{/hasChildren}}
+        {{#hasElderly}}
+        - Traveling with elderly: yes (prioritize accessible, low-intensity activities)
+        {{/hasElderly}}
+        - Preferred categories: {{preferredCategoriesStr}}
         - Additional preferences: {{additionalPreferences}}
 
         Focus on attractions that are:

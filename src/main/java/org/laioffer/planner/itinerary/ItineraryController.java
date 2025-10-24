@@ -54,6 +54,9 @@ public class ItineraryController {
             @AuthenticationPrincipal UserEntity user) {
         logger.info("Creating itinerary for user: {} to destination: {}",
                 user.getEmail(), request.getDestinationCity());
+        logger.info("🔍 DEBUG - Received request: travelPace={}, activityIntensity={}",
+                request.getTravelPace(), request.getActivityIntensity());
+        logger.info("🔍 DEBUG - Full request: {}", request);
         try {
             ItineraryEntity itinerary = itineraryService.createItinerary(request, user);
 

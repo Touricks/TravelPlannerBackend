@@ -2,7 +2,6 @@ package org.laioffer.planner.model.itinerary;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import jakarta.validation.constraints.NotNull;
 import org.laioffer.planner.model.common.ActivityIntensity;
 import org.laioffer.planner.model.common.AttractionCategory;
 import org.laioffer.planner.model.common.TravelPace;
@@ -22,11 +21,9 @@ public class CreateItineraryRequest {
 
     private TravelMode travelMode;
 
-    @NotNull
     private Integer budgetLimitCents;
 
     // User preference fields
-    @NotNull
     private TravelPace travelPace;
 
     private ActivityIntensity activityIntensity;
